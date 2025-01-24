@@ -1,0 +1,131 @@
+
+/* Home.css */
+body {
+    margin: 0; /* Important to reset default margins */
+    overflow-x: hidden;
+}
+
+.main-image-col {
+    padding: 0; /* Remove default padding from Bootstrap columns */
+}
+.font{
+    font-family: "Cookie", serif;
+}
+
+.side-images-col {
+    padding: 0; /* Remove default padding from Bootstrap columns */
+}
+
+.main-image {
+    background-image: url(../../assets/bg_!.jpg);
+    background-size: cover;
+    background-position: center;
+    width: 100% !important;
+    background-attachment: scroll;
+    height: 100vh !important; /* Full viewport height */
+}
+
+.side-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat ;
+    margin-left: 10px;
+    background-attachment: scroll;
+    width: 320px;
+    padding-bottom: 45%; /* Maintain aspect ratio (1:2 - adjust as needed) */
+    position: relative; /* Needed for absolute positioning of content if you add text */
+    overflow: hidden; /* Prevent image overflow */
+}
+
+.side-image-1 {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat ;
+    margin-left: 10px;
+    background-attachment: scroll;
+    width: 320px;
+    padding-bottom: 45%; /* Maintain aspect ratio (1:2 - adjust as needed) */
+    position: relative; /* Needed for absolute positioning of content if you add text */
+    overflow: hidden; /* Prevent image overflow */
+}
+
+.side-image:nth-child(1) {
+    background-image: url(../../assets/bg_2.jpg);
+    width: 322px;
+    height: 314px;
+}
+
+.side-image:nth-child(2) {
+    background-image: url(../../assets/bg_3.jpg);
+    width: 327px;
+    height: 314px;
+
+}
+
+.side-image-1:nth-child(1) {
+    background-image: url(../../assets/bg_4.jpg) !important;
+    height: 314px;
+    width: 320px;
+
+}
+
+.side-image-1:nth-child(2) {
+    background-image: url(../../assets/bg_5.jpg) !important;
+    height: 314px;
+    width: 327px;
+
+}
+.bg_1_text{
+    font-size: 60px;
+    padding-left: 79px;
+    padding-top: 180px;
+}
+.bg_1_text2{
+    color: #666666;
+    margin: 0 110px 5px 20px !important;
+    font-weight: 400;
+    padding-left: 60px;
+    line-height: 24px;
+    font-family: "Montserrat", sans-serif;
+    padding-bottom: 8px;
+}
+.bg_2_text{
+    /* font-size: 40px; */
+   /* * padding-left: 79px; */
+    /* padding-top: 80px;  */
+    font-weight: 400;
+    /* font-family: "Montserrat", sans-serif; */
+    font-family: "Cookie", serif;
+
+
+}
+.bg_2_text2{
+    color: #666666;
+    /* margin: 0 110px 5px 20px !important; */
+    /* font-weight: 400; */
+    /* padding-left: 60px; */
+    /* line-height: 24px; */
+    font-family: "Montserrat", sans-serif;
+    margin-top: -10px;
+    margin-bottom: 7px;
+}
+.text-underline{
+    color: black;
+    font-weight: 600;
+}
+.line{
+    width: 87px;
+    height: 4px; /* Increase the height for thickness */
+    background-color: black; 
+    border: none;
+    margin-left: 78px;
+    margin-top: 3px;
+}
+.line2{
+    width: 87px;
+    height: 4px; /* Increase the height for thickness */
+    background-color: black; 
+    border: none;
+    margin-left: 15px;
+    margin-top: 3px;
+}

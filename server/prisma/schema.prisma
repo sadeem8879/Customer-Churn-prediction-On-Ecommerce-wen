@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model MenProduct {
+  id          Int     @id @default(autoincrement())
+  name        String
+  price       Float
+  description String?
+  imageUrl    String?
+  carts       Cart[]  @relation("MenProductToCart")
+}
+
+model WomenProduct {
+  id          Int     @id @default(autoincrement())
+  name        String
+  price       Float
+  description String?
+  imageUrl    String?
+  carts       Cart[]  @relation("WomenProductToCart")
+}
+
+model KidsProduct {
+  id          Int     @id @default(autoincrement())
+  name        String
+  price       Float
+  description String?
+  imageUrl    String?
+  carts       Cart[]  @relation("KidsProductToCart")
+}
+
+model AccessoriesProduct {
+  id          Int     @id @default(autoincrement())
+  name        String
+  price       Float
+  description String?
+  imageUrl    String?
+  carts       Cart[]  @relation("AccessoriesProductToCart")
+}
+
+model CosmeticsProduct {
+  id          Int     @id @default(autoincrement())
+  name        String
+  price       Float
+  description String?
+  imageUrl    String?
+  carts       Cart[]  @relation("CosmeticsProductToCart")
+}
+
+model Cart {
+  id                 Int                 @id @default(autoincrement())
+  userId             Int
+  productId          Int
+  productType        String // To identify product type (e.g., Men, Women, etc.)
+  quantity           Int                 @default(1)
+  user               User                @relation(fields: [userId], references: [id], onDelete: Cascade)
+  menProduct         MenProduct?         @relation("MenProductToCart", fields: [productId], references: [id], map: "Cart_menProductId_fkey")
+  womenProduct       WomenProduct?       @relation("WomenProductToCart", fields: [productId], references: [id], map: "Cart_womenProductId_fkey")
+  kidsProduct        KidsProduct?        @relation("KidsProductToCart", fields: [productId], references: [id], map: "Cart_kidsProductId_fkey")
+  accessoriesProduct AccessoriesProduct? @relation("AccessoriesProductToCart", fields: [productId], references: [id], map: "Cart_accessoriesProductId_fkey")
+  cosmeticsProduct   CosmeticsProduct?   @relation("CosmeticsProductToCart", fields: [productId], references: [id], map: "Cart_cosmeticsProductId_fkey")
+  createdAt          DateTime            @default(now())
+}
+
+model User {
+  id       Int      @id @default(autoincrement())
+  username String   @unique
+  email    String   @unique
+  password String
+  carts    Cart[] // One-to-many relationship with Cart
+  profile  Profile?
+}
+
+model Profile {
+  id       Int    @id @default(autoincrement())
+  userId   Int    @unique
+  username String
+  email    String
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
