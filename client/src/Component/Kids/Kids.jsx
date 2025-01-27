@@ -112,7 +112,7 @@ const Kids = () => {
                 <Button
                   variant="primary"
                   className="btn btn-danger ms-5"
-                  onClick={() => handleBuyNow(product,"Kid")}
+                  onClick={() => handleBuyNow(product,"KidsProduct")}
                 >
                   Buy Now
                 </Button>

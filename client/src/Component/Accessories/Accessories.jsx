@@ -111,7 +111,7 @@ const Accessories = () => {
                 <Button
                   variant="primary"
                   className="btn btn-danger ms-5"
-                  onClick={() => handleBuyNow(product,"Accessories")}
+                  onClick={() => handleBuyNow(product,"AccessoriesProduct")}
                 >
                   Buy Now
                 </Button>

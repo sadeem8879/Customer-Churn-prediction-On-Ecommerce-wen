@@ -1280,36 +1280,36 @@ class UserController {
   //   if (!productId || !productType || !quantity || !name || !email || !address || !paymentMethod) {
   //     return res.status(400).json({ message: "All fields are required." });
   //   }
-  
+
   //   try {
   //     // Determine the correct product model dynamically
   //     const productModelName = `${productType.charAt(0).toLowerCase() + productType.slice(1)}Product`; 
   //     const productModel = prisma[productModelName];
-  
+
   //     if (!productModel) {
   //       return res.status(400).json({ message: `Invalid product type: ${productType}. Expected types like MenProduct, WomenProduct etc.` });
   //     }
-  
+
   //     const parsedProductId = parseInt(productId, 10);
   //     if (isNaN(parsedProductId)) {
   //       return res.status(400).json({ message: "Invalid productId provided." });
   //     }
-  
+
   //     const product = await productModel.findUnique({
   //       where: { id: parsedProductId },
   //     });
-  
+
   //     if (!product) {
   //       return res.status(404).json({ message: "Product not found." });
   //     }
-  
+
   //     const parsedQuantity = parseInt(quantity, 10);
   //     if (isNaN(parsedQuantity) || parsedQuantity < 1) {
   //       return res.status(400).json({ message: "Invalid quantity provided." });
   //     }
-  
+
   //     const totalPrice = product.price * parsedQuantity;
-  
+
   //     // Create a new order in the database
   //     const newOrder = await prisma.order.create({
   //       data: {
@@ -1323,7 +1323,7 @@ class UserController {
   //         productType, 
   //       },
   //     });
-  
+
   //     res.status(201).json({
   //       message: "Order placed successfully!",
   //       orderId: newOrder.id,
@@ -1333,90 +1333,64 @@ class UserController {
   //     res.status(500).json({ message: "Failed to place order. Try again later.", error: error.message });
   //   }
   // }
+
   static async buynow(req, res) {
     const { productId, productType, quantity, name, email, address, paymentMethod } = req.body;
 
-    // Validate the input
     if (!productId || !productType || !quantity || !name || !email || !address || !paymentMethod) {
-        return res.status(400).json({ message: "All fields are required." });
-    }
-
-    // Log incoming request data for debugging
-    console.log("Received request:", req.body);
-
-    // List of valid product types
-    const validProductTypes = ["Men", "Women", "Cosmetics", "Kids","Accessories"]; // Add other types as needed
-
-    // Ensure the productType is valid
-    if (!validProductTypes.includes(productType)) {
-        console.error(`Invalid product type: ${productType}`);
-        return res.status(400).json({ message: `Invalid product type: ${productType}. Expected types: Men, Women, Cosmetics, Kids.` });
+      return res.status(400).json({ message: "All fields are required." });
     }
 
     try {
-        // Dynamically determine the correct product model
-        const productModelName = `${productType.charAt(0).toLowerCase() + productType.slice(1)}Product`;
-        const productModel = prisma[productModelName];
+      const productModelName = `${productType.charAt(0).toLowerCase() + productType.slice(1)}Product`;
+      const productModel = prisma[productModelName];
 
-        // Log the dynamic model lookup for debugging
-        console.log("Using product model:", productModelName);
+      if (!productModel) {
+        return res.status(400).json({ message: `Invalid product type: ${productType}. Expected types like MenProduct, WomenProduct etc.` });
+      }
 
-        if (!productModel) {
-            console.error(`Product model for type "${productType}" does not exist.`);
-            return res.status(400).json({ message: `Product type "${productType}" does not exist in the model.` });
-        }
+      const parsedProductId = parseInt(productId, 10);
+      if (isNaN(parsedProductId)) {
+        return res.status(400).json({ message: "Invalid productId provided." });
+      }
 
-        // Parse productId and quantity
-        const parsedProductId = parseInt(productId, 10);
-        if (isNaN(parsedProductId)) {
-            return res.status(400).json({ message: "Invalid productId provided." });
-        }
+      const product = await productModel.findUnique({
+        where: { id: parsedProductId },
+      });
 
-        // Find the product in the database
-        const product = await productModel.findUnique({
-            where: { id: parsedProductId },
-        });
+      if (!product) {
+        return res.status(404).json({ message: "Product not found." });
+      }
 
-        // Log the found product for debugging
-        console.log("Product found:", product);
+      const parsedQuantity = parseInt(quantity, 10);
+      if (isNaN(parsedQuantity) || parsedQuantity < 1) {
+        return res.status(400).json({ message: "Invalid quantity provided." });
+      }
 
-        if (!product) {
-            return res.status(404).json({ message: "Product not found." });
-        }
+      const totalPrice = product.price * parsedQuantity;
 
-        // Validate quantity
-        const parsedQuantity = parseInt(quantity, 10);
-        if (isNaN(parsedQuantity) || parsedQuantity < 1) {
-            return res.status(400).json({ message: "Invalid quantity provided." });
-        }
+      const newOrder = await prisma.order.create({
+        data: {
+          productId: parsedProductId,
+          quantity: parsedQuantity,
+          totalPrice,
+          customerName: name,
+          customerEmail: email,
+          shippingAddress: address,
+          paymentMethod,
+          productType,
+        },
+      });
 
-        const totalPrice = product.price * parsedQuantity;
-
-        // Create a new order in the database
-        const newOrder = await prisma.order.create({
-            data: {
-                productId: parsedProductId,
-                quantity: parsedQuantity,
-                totalPrice,
-                customerName: name,
-                customerEmail: email,
-                shippingAddress: address,
-                paymentMethod,
-                productType, // Ensure the correct product type is stored
-            },
-        });
-
-        // Return a success response
-        res.status(201).json({
-            message: "Order placed successfully!",
-            orderId: newOrder.id,
-        });
+      res.status(201).json({
+        message: "Order placed successfully!",
+        orderId: newOrder.id,
+      });
     } catch (error) {
-        console.error("Error placing order:", error);
-        res.status(500).json({ message: "Failed to place order. Try again later.", error: error.message });
+      console.error("Error placing order:", error);
+      res.status(500).json({ message: "Failed to place order. Try again later.", error: error.message });
     }
-}
-
+  }
 }
 
 export default UserController;

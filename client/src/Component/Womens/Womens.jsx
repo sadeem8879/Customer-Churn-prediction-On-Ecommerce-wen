@@ -112,7 +112,7 @@ const Womens = () => {
                 <Button
                   variant="primary"
                   className="btn btn-danger ms-5"
-                  onClick={() => handleBuyNow(product,"Women")}
+                  onClick={() => handleBuyNow(product,"WomenProduct")}
                 >
                   Buy Now
                 </Button>
