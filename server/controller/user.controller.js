@@ -754,48 +754,405 @@ class UserController {
 
     }
   }
-  static async cart(req, res) {
-    const { userId, productId, productType, quantity } = req.body;
+  //   static async cart(req, res) {
+  //     const { userId, quantity, productType, menProductId, womenProductId, kidsProductId, accessoriesProductId, cosmeticsProductId } = req.body;
+  //     const parsedUserId = parseInt(userId, 10);
+  //     try {
+  //         const dataToCreate = {
+  //             userId: parsedUserId,
+  //             quantity: parseInt(quantity, 10),
+  //             productType,
+  //         };
+  //         switch (productType) {
+  //             case "MenProduct":
+  //                 dataToCreate.menProductId = parseInt(menProductId, 10);
+  //                 break;
+  //             case "WomenProduct":
+  //                 dataToCreate.womenProductId = parseInt(womenProductId, 10);
+  //                 break;
+  //             case "KidsProduct":
+  //                 dataToCreate.kidsProductId = parseInt(kidsProductId, 10);
+  //                 break;
+  //             case "AccessoriesProduct":
+  //                 dataToCreate.accessoriesProductId = parseInt(accessoriesProductId, 10);
+  //                 break;
+  //             case "CosmeticsProduct":
+  //                 dataToCreate.cosmeticsProductId = parseInt(cosmeticsProductId, 10);
+  //                 break;
+  //             default:
+  //                 return res.status(400).json({ message: "Invalid product type." });
+  //         }
 
-    // Validate incoming data
-    if (!userId || !productId || !productType || !quantity || quantity <= 0) {
-      return res.status(400).json({ error: "Invalid input data" });
-    }
+  //         console.log("Data being sent to create:", dataToCreate);
+  //         const newCartItem = await prisma.cart.create({ data: dataToCreate });
+  //         console.log("Cart item created:", newCartItem);
+  //         res.status(201).json(newCartItem);
+  //     } catch (error) {
+  //         console.error("Error creating cart item:", error);
+  //         res.status(500).json({ error: "Failed to add item to cart.", details: error.message });
+  //     }
+  //   // }
+  //   static async cart(req, res) {
+  //     const { userId, quantity, productType, menProductId, womenProductId, kidsProductId, accessoriesProductId, cosmeticsProductId } = req.body;
+  //     const parsedUserId = parseInt(userId, 10);
+  //     try {
+  //       const dataToCreate = {
+  //         userId: parsedUserId,
+  //         quantity: parseInt(quantity, 10),
+  //         productType,
+  //       };
+
+  //       switch (productType) {
+  //         case "MenProduct":
+  //           dataToCreate.menProduct = { connect: { id: parseInt(menProductId, 10) } }; // Connect the product
+  //           break;
+  //         case "WomenProduct":
+  //           dataToCreate.womenProduct = { connect: { id: parseInt(womenProductId, 10) } };
+  //           break;
+  //         case "KidsProduct":
+  //           dataToCreate.kidsProduct = { connect: { id: parseInt(kidsProductId, 10) } };
+  //           break;
+  //         case "AccessoriesProduct":
+  //           dataToCreate.accessoriesProduct = { connect: { id: parseInt(accessoriesProductId, 10) } };
+  //           break;
+  //         case "CosmeticsProduct":
+  //           dataToCreate.cosmeticsProduct = { connect: { id: parseInt(cosmeticsProductId, 10) } };
+  //           break;
+  //         default:
+  //           return res.status(400).json({ message: "Invalid product type." });
+  //       }
+
+  //       console.log("Data being sent to create:", dataToCreate);
+  //       const newCartItem = await prisma.cart.create({ data: dataToCreate, include: { menProduct: true, womenProduct: true, kidsProduct: true, accessoriesProduct: true, cosmeticsProduct: true } }); // Include here for immediate response
+  //       console.log("Cart item created:", newCartItem);
+  //       res.status(201).json(newCartItem);
+  //     } catch (error) {
+  //       console.error("Error creating cart item:", error);
+  //       res.status(500).json({ error: "Failed to add item to cart.", details: error.message });
+  //     }
+  //   }
+  //   // static async cart_fetch(req, res) {
+  //   //   const { userId } = req.params;
+
+  //   //   try {
+  //   //     const cartItems = await prisma.cart.findMany({
+  //   //       where: { userId: parseInt(userId) }, // Ensure `userId` is parsed as integer
+  //   //       include: {
+  //   //         menProduct: true,
+  //   //         womenProduct: true,
+  //   //         kidsProduct: true,
+  //   //         accessoriesProduct: true,
+  //   //         cosmeticsProduct: true,
+  //   //       },
+  //   //     });
+
+  //   //     if (!cartItems || cartItems.length === 0) {
+  //   //       return res.status(404).json({ message: "No items found in the cart." });
+  //   //     }
+
+  //   //     // Map cart items with appropriate product details
+  //   //     const formattedCartItems = cartItems.map((item) => {
+  //   //       let productDetails;
+  //   //       switch (item.productType) {
+  //   //         case "MenProduct":
+  //   //           productDetails = item.menProduct;
+  //   //           break;
+  //   //         case "WomenProduct":
+  //   //           productDetails = item.womenProduct;
+  //   //           break;
+  //   //         case "KidsProduct":
+  //   //           productDetails = item.kidsProduct;
+  //   //           break;
+  //   //         case "AccessoriesProduct":
+  //   //           productDetails = item.accessoriesProduct;
+  //   //           break;
+  //   //         case "CosmeticsProduct":
+  //   //           productDetails = item.cosmeticsProduct;
+  //   //           break;
+  //   //         default:
+  //   //           productDetails = null;
+  //   //       }
+
+  //   //       return {
+  //   //         id: item.id,
+  //   //         userId: item.userId,
+  //   //         productType: item.productType,
+  //   //         quantity: item.quantity,
+  //   //         productDetails,
+  //   //       };
+  //   //     });
+
+  //   //     res.json(formattedCartItems);
+  //   //   } catch (error) {
+  //   //     console.error("Error fetching cart items:", error);
+  //   //     res.status(500).json({ error: "Error fetching cart items" });
+  //   //   }
+  //   // }
+
+
+  //   static async cart_fetch(req, res) {
+  //     const { userId } = req.params;
+
+  //     try {
+  //         const cartItems = await prisma.cart.findMany({
+  //             where: { userId: parseInt(userId) },
+  //             include: { // Correctly include related data
+  //                 menProduct: true,
+  //                 womenProduct: true,
+  //                 kidsProduct: true,
+  //                 accessoriesProduct: true,
+  //                 cosmeticsProduct: true,
+  //             },
+  //         });
+
+  //         if (!cartItems || cartItems.length === 0) {
+  //             return res.status(404).json({ message: "No items found in the cart." });
+  //         }
+
+  //         res.json(cartItems); // Send the cartItems directly
+  //     } catch (error) {
+  //         console.error("Error fetching cart items:", error);
+  //         res.status(500).json({ error: "Error fetching cart items" });
+  //     }
+  // }
+  // static async cart(req, res) {
+  //   const { userId, quantity, productType, menProductId, womenProductId, kidsProductId, accessoriesProductId, cosmeticsProductId } = req.body;
+
+  //   try {
+  //     let productConnectName; // This is the crucial variable
+  //     let productIdName;
+
+  //       const parsedUserId = parseInt(userId, 10);
+  //       if (isNaN(parsedUserId)) {
+  //           return res.status(400).json({ message: "Invalid userId provided." });
+  //       }
+
+  //       const dataToCreate = {
+  //           user: { connect: { id: parsedUserId } },
+  //           quantity: parseInt(quantity, 10),
+  //           productType,
+  //       };
+
+  //       let productId; // Variable to hold the parsed product ID
+  //       switch (productType) {
+  //         case "MenProduct": 
+  //             productIdName = "menProductId";
+  //             productConnectName = "menProduct"; // Correct: lowercase 'm'
+  //             break;
+  //         case "WomenProduct": 
+  //             productIdName = "womenProductId";
+  //             productConnectName = "womenProduct"; // Correct: lowercase 'w'
+  //             break;
+  //         case "KidsProduct": 
+  //             productIdName = "kidsProductId";
+  //             productConnectName = "kidsProduct"; // Correct: lowercase 'k'
+  //             break;
+  //         case "AccessoriesProduct": 
+  //             productIdName = "accessoriesProductId";
+  //             productConnectName = "accessoriesProduct"; // Correct: lowercase 'a'
+  //             break;
+  //         case "CosmeticsProduct": 
+  //             productIdName = "cosmeticsProductId";
+  //             productConnectName = "cosmeticsProduct"; // Correct: lowercase 'c'
+  //             break;
+  //         default: return res.status(400).json({ message: "Invalid product type." });
+  //     }
+
+  //       // const productId = req.body[productIdName];
+
+  //       // const productId = req.body[productIdName];
+
+  //         if (!productId && productId !== 0) {
+  //             return res.status(400).json({ message: `${productType}Id is required for ${productType}.` });
+  //         }
+
+  //         const parsedProductId = parseInt(productId, 10);
+  //         if (isNaN(parsedProductId)) {
+  //             return res.status(400).json({ message: `Invalid ${productType}Id provided. Must be a number.` });
+  //         }
+
+  //     dataToCreate[productConnectName] = { connect: { id: parsedProductId } }; // Use productConnectName!!!
+
+  //     const newCartItem = await prisma.cart.create({ data: dataToCreate, include: {menProduct: true, womenProduct: true, kidsProduct: true, accessoriesProduct: true, cosmeticsProduct: true} });
+  //     res.status(201).json(newCartItem);
+  // } catch (error) {
+  //       console.error("Error creating cart item:", error);
+  //       res.status(500).json({ error: "Failed to add item to cart.", details: error.message });
+  //   }
+  // }
+  // static async cart(req, res) {
+  //   const { userId, quantity, productType } = req.body;
+
+  //   try {
+  //       const parsedUserId = parseInt(userId, 10);
+  //       if (isNaN(parsedUserId)) {
+  //           return res.status(400).json({ message: "Invalid userId provided." });
+  //       }
+
+  //       const dataToCreate = {
+  //           user: { connect: { id: parsedUserId } },
+  //           quantity: parseInt(quantity, 10),
+  //           productType,
+  //       };
+
+  //       let productIdName;
+  //       let productConnectName;
+
+  //       switch (productType) {
+  //           case "MenProduct":
+  //               productIdName = "menProductId";
+  //               productConnectName = "menProduct";
+  //               break;
+  //           case "WomenProduct":
+  //               productIdName = "womenProductId";
+  //               productConnectName = "womenProduct";
+  //               break;
+  //           case "KidsProduct":
+  //               productIdName = "kidsProductId";
+  //               productConnectName = "kidsProduct";
+  //               break;
+  //           case "AccessoriesProduct":
+  //               productIdName = "accessoriesProductId";
+  //               productConnectName = "accessoriesProduct";
+  //               break;
+  //           case "CosmeticsProduct":
+  //               productIdName = "cosmeticsProductId";
+  //               productConnectName = "cosmeticsProduct";
+  //               break;
+  //           default:
+  //               return res.status(400).json({ message: "Invalid product type." });
+  //       }
+
+  //       const productId = req.body[productIdName];
+
+  //       if (!productId && productId !== 0) {
+  //           return res.status(400).json({ message: `${productType}Id is required for ${productType}.` });
+  //       }
+
+  //       const parsedProductId = parseInt(productId, 10);
+  //       if (isNaN(parsedProductId)) {
+  //           return res.status(400).json({ message: `Invalid ${productType}Id provided. Must be a number.` });
+  //       }
+
+  //       dataToCreate[productConnectName] = { connect: { id: parsedProductId } }; // Insert the line HERE
+
+  //       const newCartItem = await prisma.cart.create({
+  //           data: dataToCreate,
+  //           include: {
+  //               menProduct: true,
+  //               womenProduct: true,
+  //               kidsProduct: true,
+  //               accessoriesProduct: true,
+  //               cosmeticsProduct: true,
+  //           },
+  //       });
+  //       res.status(201).json(newCartItem);
+  //   } catch (error) {
+  //       console.error("Error creating cart item:", error);
+  //       res.status(500).json({ error: "Failed to add item to cart.", details: error.message });
+  //   }
+  // }
+  static async cart(req, res) {
+    const { userId, quantity, productType } = req.body;
 
     try {
+      const parsedUserId = parseInt(userId, 10);
+      if (isNaN(parsedUserId)) {
+        return res.status(400).json({ message: "Invalid userId provided." });
+      }
+
+      let productIdName;
+      let productConnectName;
+      let includeOptions = {}; // Object to hold conditional include
+
+      // Determine which product type to process
+      switch (productType) {
+        case "MenProduct":
+          productIdName = "menProductId";
+          productConnectName = "menProduct";
+          includeOptions = { menProduct: true };
+          break;
+        case "WomenProduct":
+          productIdName = "womenProductId";
+          productConnectName = "womenProduct";
+          includeOptions = { womenProduct: true };
+          break;
+        case "KidsProduct":
+          productIdName = "kidsProductId";
+          productConnectName = "kidsProduct";
+          includeOptions = { kidsProduct: true };
+          break;
+        case "AccessoriesProduct":
+          productIdName = "accessoriesProductId";
+          productConnectName = "accessoriesProduct";
+          includeOptions = { accessoriesProduct: true };  // Include if needed
+          break;
+        case "CosmeticsProduct":
+          productIdName = "cosmeticsProductId";
+          productConnectName = "cosmeticsProduct";
+          includeOptions = { cosmeticsProduct: true };  // Include if needed
+          break;
+        default:
+          return res.status(400).json({ message: "Invalid product type." });
+      }
+
+      // Get productId from request body
+      const productId = req.body[productIdName];
+
+      if (!productId && productId !== 0) {
+        return res.status(400).json({ message: `${productType}Id is required for ${productType}.` });
+      }
+
+      const parsedProductId = parseInt(productId, 10);
+      if (isNaN(parsedProductId)) {
+        return res.status(400).json({ message: `Invalid ${productType}Id provided. Must be a number.` });
+      }
+
+      // Check if the product already exists in the cart
       const existingCartItem = await prisma.cart.findFirst({
-        where: { userId, productId, productType },
+        where: {
+          userId: parsedUserId,
+          [productConnectName]: { id: parsedProductId },
+        },
       });
 
+      // If the item exists in the cart, update the quantity
       if (existingCartItem) {
-        const updatedItem = await prisma.cart.update({
+        const updatedCartItem = await prisma.cart.update({
           where: { id: existingCartItem.id },
-          data: { quantity: existingCartItem.quantity + quantity },
-        });
-        res.json(updatedItem);
-      } else {
-        const newCartItem = await prisma.cart.create({
           data: {
-            userId: parseInt(userId, 10),
-            productId: parseInt(productId, 10),
-            quantity: parseInt(quantity, 10),
-            productType,
+            quantity: existingCartItem.quantity + parseInt(quantity, 10),
+            productType: productType  // Ensure productType is updated too
           },
+          include: includeOptions, // Use the conditional include for product data
         });
-        res.json(newCartItem);
+        return res.status(200).json(updatedCartItem);
+      } else {
+        // If the item doesn't exist in the cart, create a new cart item
+        const dataToCreate = {
+          user: { connect: { id: parsedUserId } },
+          quantity: parseInt(quantity, 10),
+          [productConnectName]: { connect: { id: parsedProductId } },
+          productType: productType,  // Pass productType here
+        };
+
+        const newCartItem = await prisma.cart.create({
+          data: dataToCreate,
+          include: includeOptions, // Use the conditional include for product data
+        });
+        return res.status(201).json(newCartItem);
       }
     } catch (error) {
-      console.error("Error adding to cart:", error);
-      res.status(500).json({ error: "Error adding to cart" });
+      console.error("Error creating/updating cart item:", error);
+      return res.status(500).json({ error: "Failed to add item to cart.", details: error.message });
     }
   }
 
   static async cart_fetch(req, res) {
     const { userId } = req.params;
-
     try {
       const cartItems = await prisma.cart.findMany({
-        where: { userId: parseInt(userId) }, // Ensure `userId` is parsed as integer
+        where: { user: { id: parseInt(userId) } }, // Use nested where for relations
         include: {
           menProduct: true,
           womenProduct: true,
@@ -809,52 +1166,20 @@ class UserController {
         return res.status(404).json({ message: "No items found in the cart." });
       }
 
-      // Map cart items with appropriate product details
-      const formattedCartItems = cartItems.map((item) => {
-        let productDetails;
-        switch (item.productType) {
-          case "MenProduct":
-            productDetails = item.menProduct;
-            break;
-          case "WomenProduct":
-            productDetails = item.womenProduct;
-            break;
-          case "KidsProduct":
-            productDetails = item.kidsProduct;
-            break;
-          case "AccessoriesProduct":
-            productDetails = item.accessoriesProduct;
-            break;
-          case "CosmeticsProduct":
-            productDetails = item.cosmeticsProduct;
-            break;
-          default:
-            productDetails = null;
-        }
-
-        return {
-          id: item.id,
-          userId: item.userId,
-          productType: item.productType,
-          quantity: item.quantity,
-          productDetails,
-        };
-      });
-
-      res.json(formattedCartItems);
+      res.json(cartItems);
     } catch (error) {
       console.error("Error fetching cart items:", error);
       res.status(500).json({ error: "Error fetching cart items" });
     }
   }
-
-
-
   static async cart_delete(req, res) {
     const { cartId } = req.params;
+    console.log("Deleting cart item with ID:", cartId); // Log cartId
 
     try {
       const cartItem = await prisma.cart.findFirst({ where: { id: parseInt(cartId) } });
+      console.log("Cart item found:", cartItem); // Log the cart item
+
       if (!cartItem) {
         return res.status(404).json({ error: "Item not found in cart" });
       }
@@ -866,6 +1191,231 @@ class UserController {
       res.status(500).json({ error: "Error removing item from cart" });
     }
   }
+
+
+  static async cart_update(req, res) {
+    try {
+      const { quantity } = req.body;
+      let { id } = req.params;
+      id = parseInt(id);
+
+      // Validate quantity
+      if (!quantity || quantity < 1) {
+        return res.status(400).json({ msg: "Invalid quantity." });
+      }
+
+      const updatedCartItem = await prisma.cart.update({
+        where: { id },
+        data: { quantity },
+      });
+
+      return res.status(200).json({ msg: "Updated successfully", data: updatedCartItem });
+    } catch (error) {
+      console.error("Error updating cart item:", error);
+      return res.status(500).json({ msg: error.message });
+    }
+  }
+  // static async buynow(req, res) {
+  //   const { productId, productType, quantity, name, email, address, paymentMethod } = req.body;
+  //   //  const { product, quantity, formData } = req.body;
+
+  //   // if (!product || !quantity || !formData) {
+  //   //   return res.status(400).json({ message: "Missing required fields." });
+  //   // }
+  //   // Validate incoming request
+  //   if (!productId || !productType || !quantity || !name || !email || !address || !paymentMethod) {
+  //     return res.status(400).json({ message: "All fields are required." });
+  //   }
+
+  //   try {
+  //     // Dynamically determine the product model based on productType
+  //     const productModel = prisma[`${productType.toLowerCase()}Product`];
+
+  //     // Validate productType
+  //     if (!productModel) {
+  //       return res.status(400).json({ message: "Invalid product type." });
+  //     }
+
+  //     // Fetch product details
+  //     const product = await productModel.findUnique({
+  //       where: { id: productId },
+  //     });
+
+  //     if (!product) {
+  //       return res.status(404).json({ message: "Product not found." });
+  //     }
+
+  //     // Calculate total price
+  //     const totalPrice = product.price * quantity;
+
+  //     // Store order details in the database
+  //     const newOrder = await prisma.order.create({
+  //       data: {
+  //         productId,
+  //         quantity,
+  //         totalPrice,
+  //         customerName: name,
+  //         customerEmail: email,
+  //         shippingAddress: address,
+  //         paymentMethod,
+  //         status: "Pending", // Initial status
+  //       },
+  //     });
+
+  //     // Respond with success message
+  //     res.status(201).json({
+  //       message: "Order placed successfully!",
+  //       orderId: newOrder.id,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error placing order:", error);
+  //     res.status(500).json({ message: "Failed to place order. Try again later." });
+  //   }
+  // }
+
+  // static async buynow(req, res) {
+  //   const { productId, productType, quantity, name, email, address, paymentMethod } = req.body;
+
+  //   // Validate the input
+  //   if (!productId || !productType || !quantity || !name || !email || !address || !paymentMethod) {
+  //     return res.status(400).json({ message: "All fields are required." });
+  //   }
+  
+  //   try {
+  //     // Determine the correct product model dynamically
+  //     const productModelName = `${productType.charAt(0).toLowerCase() + productType.slice(1)}Product`; 
+  //     const productModel = prisma[productModelName];
+  
+  //     if (!productModel) {
+  //       return res.status(400).json({ message: `Invalid product type: ${productType}. Expected types like MenProduct, WomenProduct etc.` });
+  //     }
+  
+  //     const parsedProductId = parseInt(productId, 10);
+  //     if (isNaN(parsedProductId)) {
+  //       return res.status(400).json({ message: "Invalid productId provided." });
+  //     }
+  
+  //     const product = await productModel.findUnique({
+  //       where: { id: parsedProductId },
+  //     });
+  
+  //     if (!product) {
+  //       return res.status(404).json({ message: "Product not found." });
+  //     }
+  
+  //     const parsedQuantity = parseInt(quantity, 10);
+  //     if (isNaN(parsedQuantity) || parsedQuantity < 1) {
+  //       return res.status(400).json({ message: "Invalid quantity provided." });
+  //     }
+  
+  //     const totalPrice = product.price * parsedQuantity;
+  
+  //     // Create a new order in the database
+  //     const newOrder = await prisma.order.create({
+  //       data: {
+  //         productId: parsedProductId,
+  //         quantity: parsedQuantity,
+  //         totalPrice,
+  //         customerName: name,
+  //         customerEmail: email,
+  //         shippingAddress: address,
+  //         paymentMethod,
+  //         productType, 
+  //       },
+  //     });
+  
+  //     res.status(201).json({
+  //       message: "Order placed successfully!",
+  //       orderId: newOrder.id,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error placing order:", error);
+  //     res.status(500).json({ message: "Failed to place order. Try again later.", error: error.message });
+  //   }
+  // }
+  static async buynow(req, res) {
+    const { productId, productType, quantity, name, email, address, paymentMethod } = req.body;
+
+    // Validate the input
+    if (!productId || !productType || !quantity || !name || !email || !address || !paymentMethod) {
+        return res.status(400).json({ message: "All fields are required." });
+    }
+
+    // Log incoming request data for debugging
+    console.log("Received request:", req.body);
+
+    // List of valid product types
+    const validProductTypes = ["Men", "Women", "Cosmetics", "Kids","Accessories"]; // Add other types as needed
+
+    // Ensure the productType is valid
+    if (!validProductTypes.includes(productType)) {
+        console.error(`Invalid product type: ${productType}`);
+        return res.status(400).json({ message: `Invalid product type: ${productType}. Expected types: Men, Women, Cosmetics, Kids.` });
+    }
+
+    try {
+        // Dynamically determine the correct product model
+        const productModelName = `${productType.charAt(0).toLowerCase() + productType.slice(1)}Product`;
+        const productModel = prisma[productModelName];
+
+        // Log the dynamic model lookup for debugging
+        console.log("Using product model:", productModelName);
+
+        if (!productModel) {
+            console.error(`Product model for type "${productType}" does not exist.`);
+            return res.status(400).json({ message: `Product type "${productType}" does not exist in the model.` });
+        }
+
+        // Parse productId and quantity
+        const parsedProductId = parseInt(productId, 10);
+        if (isNaN(parsedProductId)) {
+            return res.status(400).json({ message: "Invalid productId provided." });
+        }
+
+        // Find the product in the database
+        const product = await productModel.findUnique({
+            where: { id: parsedProductId },
+        });
+
+        // Log the found product for debugging
+        console.log("Product found:", product);
+
+        if (!product) {
+            return res.status(404).json({ message: "Product not found." });
+        }
+
+        // Validate quantity
+        const parsedQuantity = parseInt(quantity, 10);
+        if (isNaN(parsedQuantity) || parsedQuantity < 1) {
+            return res.status(400).json({ message: "Invalid quantity provided." });
+        }
+
+        const totalPrice = product.price * parsedQuantity;
+
+        // Create a new order in the database
+        const newOrder = await prisma.order.create({
+            data: {
+                productId: parsedProductId,
+                quantity: parsedQuantity,
+                totalPrice,
+                customerName: name,
+                customerEmail: email,
+                shippingAddress: address,
+                paymentMethod,
+                productType, // Ensure the correct product type is stored
+            },
+        });
+
+        // Return a success response
+        res.status(201).json({
+            message: "Order placed successfully!",
+            orderId: newOrder.id,
+        });
+    } catch (error) {
+        console.error("Error placing order:", error);
+        res.status(500).json({ message: "Failed to place order. Try again later.", error: error.message });
+    }
+}
 
 }
 

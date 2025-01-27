@@ -16,9 +16,12 @@ userRoute.get("/womens",  userController.womenproduct);
 userRoute.get("/kids",  userController.kidsproduct);
 userRoute.get("/accessories",  userController.accessories);
 userRoute.get("/cosmetics",  userController.cosmetics);
-userRoute.post("/cart",  userController.cosmetics);
+userRoute.post("/cart",  userController.cart);
 userRoute.get("/cart/:userId",  userController.cart_fetch);
 userRoute.delete("/cart/:cartId",  userController.cart_delete);
+userRoute.put("/cart/:id",  userController.cart_update);
+userRoute.post("/buynow", userController.buynow);
+
 
 
 // userRoute.get("/profile", verifyJWT, userController.getUserProfile); // Protect this route

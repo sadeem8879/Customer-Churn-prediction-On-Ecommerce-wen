@@ -74,8 +74,10 @@ import Accessories from "./Component/Accessories/Accessories";
 import Cosmetics from "./Component/Cosmetics/Cosmetics";
 import Register from './Component/Register/Register';
 import MyNavbar from './Component/Navbar/myNavbar';
+import View from './Component/Checkout/View';
 import Profile from "./Component/Profile/Profile";
 import Cart from "./Component/Cart/Cart";
+import Buy_now from "./Component/Buy_now/Buy_now"
 import { CartProvider } from './Context/CartContext';  // Import CartProvider
 
 function App() {
@@ -114,6 +116,9 @@ function App() {
           <Route path="/accessories" element={<Accessories />} />
           <Route path="/cosmetics" element={<Cosmetics />} />
           <Route path="/cart" element={<Cart />} />  {/* Cart route */}
+          <Route path="/product" element={<View />} />  {/* Cart route */}
+          <Route path="/buynow" element={<Buy_now />} />
+
         </Routes>
       </BrowserRouter>
     </CartProvider>
