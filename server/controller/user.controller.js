@@ -1334,63 +1334,142 @@ class UserController {
   //   }
   // }
 
+  // static async buynow(req, res) {
+  //   const { productId, productType, quantity, name, email, address, paymentMethod } = req.body;
+
+  //   if (!productId || !productType || !quantity || !name || !email || !address || !paymentMethod) {
+  //     return res.status(400).json({ message: "All fields are required." });
+  //   }
+
+  //   try {
+  //     const productModelName = `${productType.charAt(0).toLowerCase() + productType.slice(1)}Product`;
+  //     const productModel = prisma[productModelName];
+
+  //     if (!productModel) {
+  //       return res.status(400).json({ message: `Invalid product type: ${productType}. Expected types like MenProduct, WomenProduct etc.` });
+  //     }
+
+  //     const parsedProductId = parseInt(productId, 10);
+  //     if (isNaN(parsedProductId)) {
+  //       return res.status(400).json({ message: "Invalid productId provided." });
+  //     }
+
+  //     const product = await productModel.findUnique({
+  //       where: { id: parsedProductId },
+  //     });
+
+  //     if (!product) {
+  //       return res.status(404).json({ message: "Product not found." });
+  //     }
+
+  //     const parsedQuantity = parseInt(quantity, 10);
+  //     if (isNaN(parsedQuantity) || parsedQuantity < 1) {
+  //       return res.status(400).json({ message: "Invalid quantity provided." });
+  //     }
+
+  //     const totalPrice = product.price * parsedQuantity;
+
+  //     const newOrder = await prisma.order.create({
+  //       data: {
+  //         productId: parsedProductId,
+  //         quantity: parsedQuantity,
+  //         totalPrice,
+  //         customerName: name,
+  //         customerEmail: email,
+  //         shippingAddress: address,
+  //         paymentMethod,
+  //         productType,
+  //       },
+  //     });
+
+  //     res.status(201).json({
+  //       message: "Order placed successfully!",
+  //       orderId: newOrder.id,
+  //     });
+  //   } catch (error) {
+  //     console.error("Error placing order:", error);
+  //     res.status(500).json({ message: "Failed to place order. Try again later.", error: error.message });
+  //   }
+  // }
   static async buynow(req, res) {
     const { productId, productType, quantity, name, email, address, paymentMethod } = req.body;
 
+    // Validate input data
     if (!productId || !productType || !quantity || !name || !email || !address || !paymentMethod) {
-      return res.status(400).json({ message: "All fields are required." });
+        return res.status(400).json({ message: "All fields are required." });
     }
 
     try {
-      const productModelName = `${productType.charAt(0).toLowerCase() + productType.slice(1)}Product`;
-      const productModel = prisma[productModelName];
+        // Mapping for product models in Prisma
+        const modelMapping = {
+            MenProduct: prisma.menProduct,
+            WomenProduct: prisma.womenProduct,
+            KidsProduct: prisma.kidsProduct,
+            AccessoriesProduct: prisma.accessoriesProduct,
+            CosmeticsProduct: prisma.cosmeticsProduct
+        };
 
-      if (!productModel) {
-        return res.status(400).json({ message: `Invalid product type: ${productType}. Expected types like MenProduct, WomenProduct etc.` });
-      }
+        // Check if productType is valid
+        const productModel = modelMapping[productType];
+        if (!productModel) {
+            return res.status(400).json({ 
+                message: `Invalid product type: ${productType}. Expected types: ${Object.keys(modelMapping).join(", ")}.` 
+            });
+        }
 
-      const parsedProductId = parseInt(productId, 10);
-      if (isNaN(parsedProductId)) {
-        return res.status(400).json({ message: "Invalid productId provided." });
-      }
+        // Validate productId
+        const parsedProductId = parseInt(productId, 10);
+        if (isNaN(parsedProductId)) {
+            return res.status(400).json({ message: "Invalid productId provided." });
+        }
 
-      const product = await productModel.findUnique({
-        where: { id: parsedProductId },
-      });
+        // Fetch product details
+        const product = await productModel.findUnique({
+            where: { id: parsedProductId },
+        });
 
-      if (!product) {
-        return res.status(404).json({ message: "Product not found." });
-      }
+        if (!product) {
+            return res.status(404).json({ message: "Product not found." });
+        }
 
-      const parsedQuantity = parseInt(quantity, 10);
-      if (isNaN(parsedQuantity) || parsedQuantity < 1) {
-        return res.status(400).json({ message: "Invalid quantity provided." });
-      }
+        // Validate quantity
+        const parsedQuantity = parseInt(quantity, 10);
+        if (isNaN(parsedQuantity) || parsedQuantity < 1) {
+            return res.status(400).json({ message: "Invalid quantity provided." });
+        }
 
-      const totalPrice = product.price * parsedQuantity;
+        // Calculate total price
+        const totalPrice = product.price * parsedQuantity;
 
-      const newOrder = await prisma.order.create({
-        data: {
-          productId: parsedProductId,
-          quantity: parsedQuantity,
-          totalPrice,
-          customerName: name,
-          customerEmail: email,
-          shippingAddress: address,
-          paymentMethod,
-          productType,
-        },
-      });
+        // Create new order in Prisma
+        const newOrder = await prisma.order.create({
+            data: {
+                productId: parsedProductId,
+                quantity: parsedQuantity,
+                totalPrice,
+                customerName: name,
+                customerEmail: email,
+                shippingAddress: address,
+                paymentMethod,
+                productType,
+            },
+        });
 
-      res.status(201).json({
-        message: "Order placed successfully!",
-        orderId: newOrder.id,
-      });
+        // Send success response
+        res.status(201).json({
+            message: "Order placed successfully!",
+            orderId: newOrder.id,
+        });
+
     } catch (error) {
-      console.error("Error placing order:", error);
-      res.status(500).json({ message: "Failed to place order. Try again later.", error: error.message });
+        console.error("Error placing order:", error);
+        res.status(500).json({ 
+            message: "Failed to place order. Try again later.", 
+            error: error.message 
+        });
     }
-  }
+}
+
 }
 
 export default UserController;

@@ -102,13 +102,15 @@ const Buynow = () => {
   const handleCheckout = async (e) => {
     e.preventDefault();
   
-    // Log the productType to verify
-    console.log("Selected Product Type:", product.productType);
+    if (!formData.name || !formData.email || !formData.address || !product.productType) {
+      alert('All fields are required.');
+      return;
+    }
   
     const orderData = {
       productId: product.id,
-      productType: product.productType, // Ensure productType is correct
-      quantity: quantity,
+      productType: product.productType, // Ensure this field exists
+      quantity,
       name: formData.name,
       email: formData.email,
       address: formData.address,
@@ -120,13 +122,14 @@ const Buynow = () => {
     try {
       const response = await axios.post('http://localhost:8080/buynow', orderData);
       if (response.status === 201) {
-        alert('Order placed successfully');
+        alert('Order placed successfully!');
         navigate("/order-success", { state: { orderId: response.data.orderId } });
       }
     } catch (error) {
       console.error("Error placing order:", error.response ? error.response.data : error.message);
     }
   };
+  
   
   const totalPrice = (product.price * quantity).toFixed(2);
 

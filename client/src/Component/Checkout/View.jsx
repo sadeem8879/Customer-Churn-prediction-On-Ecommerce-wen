@@ -155,11 +155,17 @@ const Checkout = () => {
   const navigate = useNavigate();
   const { product } = location.state || {};
 
+  // useEffect(() => {
+  //  const productType = product.productType || 'object'; // Ensure productType is valid
+
+  //   console.log('Selected Product:', product);
+  //   console.log('Selected Product Type:', product?.productType); // Log to verify
+  // }, [product]);
   useEffect(() => {
     console.log('Selected Product:', product);
-    console.log('Selected Product Type:', product?.productType); // Log to verify
+    console.log('Selected Product Type:', product?.productType); // Ensure it's not undefined
   }, [product]);
-
+  
   if (!product) {
     return <div>No product selected.</div>;
   }

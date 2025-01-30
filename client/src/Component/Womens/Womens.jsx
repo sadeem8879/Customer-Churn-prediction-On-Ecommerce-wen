@@ -83,9 +83,13 @@ const Womens = () => {
       }
     }
   };
-  const handleBuyNow= (product,productType)=>{
-    navigate('/product', { state: { product: product, quantity: 1 ,productType} })
-  }
+  // const handleBuyNow= (product,productType)=>{
+  //   navigate('/product', { state: { product: product, quantity: 1 ,productType} })
+  // }
+  const handleBuyNow = (product, productType) => {
+    navigate('/product', { state: { product: { ...product, productType }, quantity: 1 } });
+  };
+  
 
   return (
     <Container>

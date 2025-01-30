@@ -79,6 +79,7 @@ import Profile from "./Component/Profile/Profile";
 import Cart from "./Component/Cart/Cart";
 import Buy_now from "./Component/Buy_now/Buy_now"
 import { CartProvider } from './Context/CartContext';  // Import CartProvider
+import OrderSuccess from "./Component/OrderSuccess/OrderSuccess"
 
 function App() {
   const [userId, setUserId] = useState(localStorage.getItem('userId') || null);
@@ -118,6 +119,7 @@ function App() {
           <Route path="/cart" element={<Cart />} />  {/* Cart route */}
           <Route path="/product" element={<View />} />  {/* Cart route */}
           <Route path="/buynow" element={<Buy_now />} />
+          <Route path="/order-success" element={<OrderSuccess />} />
 
         </Routes>
       </BrowserRouter>

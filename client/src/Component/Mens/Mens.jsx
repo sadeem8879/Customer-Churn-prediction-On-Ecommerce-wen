@@ -20,9 +20,10 @@ const Mens = () => {
 
   let parsedUserId;
 
-  const handleBuyNow= (product,productType)=>{
-    navigate('/product', { state: { product: product, quantity: 1 ,productType} })
-  }
+  const handleBuyNow = (product, productType) => {
+    navigate('/product', { state: { product: { ...product, productType }, quantity: 1 } });
+  };
+  
   const handleAddToCart = async (product, productType) => {
     const userId = localStorage.getItem("userId");
     if (!userId) {
