@@ -1,101 +1,65 @@
-// import React, { useEffect, useState } from "react";
-// import axios from "axios";
-// import { useNavigate } from "react-router-dom";
-
-// const Profile = () => {
-//   const [user, setUser] = useState(null);
-//   const [error, setError] = useState("");
-//   const navigate = useNavigate();
-
-//   useEffect(() => {
-//     const fetchUserProfile = async () => {
-//       const token = localStorage.getItem("token");
-
-//       try {
-//         const response = await axios.get("http://localhost:8080/profile", {
-//           headers: { Authorization: `Bearer ${token}` },
-//         });
-
-//         setUser(response.data.user); // Set user profile data
-//       } catch (error) {
-//         setError("Error fetching profile: " + (error.response?.data || error.message));
-//         if (error.response?.status === 401) {
-//           navigate("/login"); // Redirect to login if unauthorized
-//         }
-//       }
-//     };
-
-//     fetchUserProfile();
-//   }, [navigate]);
-
-//   if (error) {
-//     return <div>{error}</div>;
-//   }
-
-//   if (!user) {
-//     return <div>Loading...</div>;
-//   }
-
-//   return (
-//     <div>
-//       <h1>User Profile</h1>
-//       <p>Username: {user.Username}</p>
-//       <p>Email: {user.email}</p>
-//       {/* Add other user details here */}
-//     </div>
-//   );
-// };
-
-// export default Profile;
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 function Profile() {
   const [profile, setProfile] = useState(null);
   const [error, setError] = useState(null);
+  const [userTimeSpent, setUserTimeSpent] = useState(0);  // Store time spent in state
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      const token = localStorage.getItem('token');
+    const fetchUserProfile = async () => {
+      const token = localStorage.getItem("token");
 
       if (!token) {
-        setError('No token found. Please log in.');
+        setError("No token found, please log in.");
         return;
       }
 
       try {
-        const response = await fetch('/profile', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+        const response = await axios.get("http://localhost:8080/profile", {
+          headers: { Authorization: `Bearer ${token}` },
         });
 
-        if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.message || 'Failed to fetch profile');
-        }
-
-        const data = await response.json();
-        setProfile(data);
-      } catch (err) {
-        setError(err.message);
+        setProfile(response.data.user); // Set profile data
+      } catch (error) {
+        setError("Error fetching profile: " + (error.response?.data || error.message));
       }
     };
 
-    fetchProfile();
+    const fetchTimeSpent = async () => {
+      const userId = localStorage.getItem("userId"); // Get userId from localStorage (or from context if you're using that)
+      if (!userId) return; // If there's no userId, don't proceed
+  
+      const currentDate = new Date().toISOString().split("T")[0]; // Get current date in YYYY-MM-DD format
+  
+      try {
+        const response = await axios.get("http://localhost:8080/api/activity/time-spent", {
+          params: { userId, date: currentDate },
+        });
+        console.log("Time spent data: ", response.data);
+        setUserTimeSpent(response.data.timeSpent || 0); // Store the time spent value in the state
+      } catch (error) {
+        console.error("Error fetching time spent: ", error);
+      }
+    };
+
+    fetchUserProfile();
+    fetchTimeSpent();
   }, []);
 
   if (error) {
-    return <div>Error: {error}</div>;
+    return <div>{error}</div>;
   }
 
   if (!profile) {
-    return <div>Loading...</div>;
+    return <div>Loading profile...</div>;
   }
 
   return (
     <div>
       <h1>Welcome, {profile.name}!</h1>
       <p>Email: {profile.email}</p>
+      <p>User Time Spent Today: {userTimeSpent} seconds</p>
       {/* Add more profile details here */}
     </div>
   );

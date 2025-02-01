@@ -76,7 +76,9 @@ model User {
     email    String   @unique
     password String
     carts    Cart[]
-    profile  Profile?
+     profile   Profile?
+      logins    UserLogin[]  // Correct: separate line
+  timeSpent UserTimeSpent[] // Correct: separate line
 }
 
 model Profile {
@@ -99,4 +101,23 @@ model Order {
   status          String   @default("Pending")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
+}
+model UserLogin {
+  id        String   @id @default(uuid())  // Unique ID for each login record
+  userId    Int
+  date      DateTime @default(now())       // Stores the login date
+  loginCount Int      @default(1)          // Number of logins in a day
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])  // Ensures only one record per user per day
+}
+
+model UserTimeSpent {
+  id        String   @id @default(uuid())  // Unique ID for each record
+  userId    Int
+  date      DateTime @default(now())       // Stores the date
+  timeSpent Int      @default(0)           // Total time spent in seconds
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([userId, date])  // Ensures only one record per user per day
 }

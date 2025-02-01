@@ -96,26 +96,26 @@ async function main() {
     //             { name: 'rmourPro', price: 9.99, description: 'rmourPro Edge To Edge Tempered Glass for Apple iPhone 11, Apple 11, iPhone 11, Apple iPhone XR, Apple XR, Apple iPhone XR, (OG Privacy)  (Pack of 1)', imageUrl: '/images/accessories/17.jpg' },
     //         ]
     //     })
-    await prisma.CosmeticsProduct.createMany({
-        data: [
-            { name: 'MORNECA', price: 19.00, description: 'Professional Makeup Kit for Women Girl Full Kit with Mirror 60 Colors All in One Make up Gift Set Included Eyeshadow,Blusher,Highlighter,Compact Powder,Brow Powder,Lipstick,Glitter,Eyeliner,Mascara 01', imageUrl: '/images/cosmetics/1.jpg' },
-            { name: 'BEAKEY', price: 11.90, description: 'BEAKEY Makeup Brushes Set, Professional Foundation Eyeshadow Concealer Blush Powder Bronzer Applicator, 2 Blender Sponge wit Beauty Paper Case, Valentines Day Gifts for Her', imageUrl: '/images/cosmetics/2.jpg' },
-            { name: 'Tinclen', price: 6.69, description: 'Eyelash Growth Serum with Advanced Formula Eyelash Enhancing Serum for Longer Thicker and Fuller Lashes Lash Serum for Eyelash Growth Gentle & Vegan Eyelash Conditioner 0.17 Fl Oz (5mL)', imageUrl: '/images/cosmetics/3.jpg' },
-            { name: 'e.l.f. ', price: 10.19, description: 'e.l.f. Glow Reviver Lip Oil, Nourishing Tinted Lip Oil For A High-shine Finish, Infused With Jojoba Oil, Vegan & Cruelty-free, Rose Envy', imageUrl: '/images/cosmetics/4.jpg' },
-            { name: 'e.l.f.', price: 9.99, description: 'e.l.f. Instant Lift Brow Pencil, Dual-Sided, Precise, Fine Tip, Shapes, Defines, Fills Brows, Contours, Combs, Tames, Neutral Brown, 0.006 Oz', imageUrl: '/images/cosmetics/5.jpg' },
-            { name: 'LAURA GELLER NEW YORK', price: 11.99, description: 'LAURA GELLER NEW YORK Spackle Primer - Hydrate - Super-Size 2 Fl Oz - Hyaluronic Acid Makeup Primer for Mature Skin', imageUrl: '/images/cosmetics/6.jpg' },
-            { name: 'Revlon', price: 3.99, description: 'Revlon ColorStay Pencil Waterproof Eyeliner, Smudge-Proof, Eye Makeup with Built-In Sharpener, Packaging May Vary, 201 Black, 0.01 Oz', imageUrl: '/images/cosmetics/7.jpg' },
-            { name: 'AOLIKOKO', price: 12.99, description: '12-Color Pro Makeup Kit for Women - Eyeshadow, Foundation, Lipstick, Blush, Brushes, Eyeliner Stamp', imageUrl: '/images/cosmetics/8.jpg' },
-            { name: 'Bliss Store', price: 8.99, description: 'Bliss Bright Idea Vitamin C + Tri-Peptide Collagen Brightening Face Skincare Serum - Anti Aging, Reduces Dark Spots, Boosts Skin Elasticity - Clean - Vegan & Cruelty-Free - 1 Fl OzVisit the Bliss Store', imageUrl: '/images/cosmetics/9.jpg' },
-            { name: 'e.l.f.', price: 8.99, description: 'e.l.f. SKIN Holy Hydration! Hydrated Ever After Skincare Mini Kit, Cleanser, Makeup Remover, Moisturiser & Eye Cream For Hydrating Skin, Airplane-Friendly Sizes', imageUrl: '/images/cosmetics/10.jpg' },
-            { name: 'e.l.f.', price: 8.99, description: 'Skin Care Set Vitamin C cosmetics Beauty Gift Sets Skin Care Kit with Cleanser, Toner, Serum, Eye Cream, Face Cream Travel Kit for Women Teen Girls Mom Daughter Birthday TSA-friendly Sizes 5pcs', imageUrl: '/images/cosmetics/11.jpg' },
-            { name: 'LUXAZA', price: 10.99, description: 'Classic 3PCS Neutral Eyeshadow Stick Makeup Set, Metallic Shimmer Matte Cream Eye Shadow Eyeliner Brightener Pencil Crayon - D1', imageUrl: '/images/cosmetics/12.jpg' },
-            { name: 'EACHY', price: 11.99, description: 'EACHY Travel Makeup Bag,Large Capacity Cosmetic Bags for Women,Waterproof Portable Pouch Open Flat Toiletry Bag Make up Organizer with Divider and Handle', imageUrl: '/images/cosmetics/13.jpg' },
-            { name: 'YLNALO', price: 8.99, description: 'YLNALO Blackhead Remover Mask Kit, Charcoal Peel Off Facial Mask with Brush and Pimple Extractors, Deep Cleansing for Face Nose Blackhead Pores Acne, For All Skin Types (3.5 Fl.oz)', imageUrl: '/images/cosmetics/14.jpg' },
-            { name: 'Purederm', price: 4.99, description: 'Purederm Deep Purifying Yellow O2 Bubble Mask Turmeric (5 Pack) – Bubble Face Sheet Mask for Purifying & Vitalizing', imageUrl: '/images/cosmetics/15.jpg' },
+    // await prisma.CosmeticsProduct.createMany({
+    //     data: [
+    //         { name: 'MORNECA', price: 19.00, description: 'Professional Makeup Kit for Women Girl Full Kit with Mirror 60 Colors All in One Make up Gift Set Included Eyeshadow,Blusher,Highlighter,Compact Powder,Brow Powder,Lipstick,Glitter,Eyeliner,Mascara 01', imageUrl: '/images/cosmetics/1.jpg' },
+    //         { name: 'BEAKEY', price: 11.90, description: 'BEAKEY Makeup Brushes Set, Professional Foundation Eyeshadow Concealer Blush Powder Bronzer Applicator, 2 Blender Sponge wit Beauty Paper Case, Valentines Day Gifts for Her', imageUrl: '/images/cosmetics/2.jpg' },
+    //         { name: 'Tinclen', price: 6.69, description: 'Eyelash Growth Serum with Advanced Formula Eyelash Enhancing Serum for Longer Thicker and Fuller Lashes Lash Serum for Eyelash Growth Gentle & Vegan Eyelash Conditioner 0.17 Fl Oz (5mL)', imageUrl: '/images/cosmetics/3.jpg' },
+    //         { name: 'e.l.f. ', price: 10.19, description: 'e.l.f. Glow Reviver Lip Oil, Nourishing Tinted Lip Oil For A High-shine Finish, Infused With Jojoba Oil, Vegan & Cruelty-free, Rose Envy', imageUrl: '/images/cosmetics/4.jpg' },
+    //         { name: 'e.l.f.', price: 9.99, description: 'e.l.f. Instant Lift Brow Pencil, Dual-Sided, Precise, Fine Tip, Shapes, Defines, Fills Brows, Contours, Combs, Tames, Neutral Brown, 0.006 Oz', imageUrl: '/images/cosmetics/5.jpg' },
+    //         { name: 'LAURA GELLER NEW YORK', price: 11.99, description: 'LAURA GELLER NEW YORK Spackle Primer - Hydrate - Super-Size 2 Fl Oz - Hyaluronic Acid Makeup Primer for Mature Skin', imageUrl: '/images/cosmetics/6.jpg' },
+    //         { name: 'Revlon', price: 3.99, description: 'Revlon ColorStay Pencil Waterproof Eyeliner, Smudge-Proof, Eye Makeup with Built-In Sharpener, Packaging May Vary, 201 Black, 0.01 Oz', imageUrl: '/images/cosmetics/7.jpg' },
+    //         { name: 'AOLIKOKO', price: 12.99, description: '12-Color Pro Makeup Kit for Women - Eyeshadow, Foundation, Lipstick, Blush, Brushes, Eyeliner Stamp', imageUrl: '/images/cosmetics/8.jpg' },
+    //         { name: 'Bliss Store', price: 8.99, description: 'Bliss Bright Idea Vitamin C + Tri-Peptide Collagen Brightening Face Skincare Serum - Anti Aging, Reduces Dark Spots, Boosts Skin Elasticity - Clean - Vegan & Cruelty-Free - 1 Fl OzVisit the Bliss Store', imageUrl: '/images/cosmetics/9.jpg' },
+    //         { name: 'e.l.f.', price: 8.99, description: 'e.l.f. SKIN Holy Hydration! Hydrated Ever After Skincare Mini Kit, Cleanser, Makeup Remover, Moisturiser & Eye Cream For Hydrating Skin, Airplane-Friendly Sizes', imageUrl: '/images/cosmetics/10.jpg' },
+    //         { name: 'e.l.f.', price: 8.99, description: 'Skin Care Set Vitamin C cosmetics Beauty Gift Sets Skin Care Kit with Cleanser, Toner, Serum, Eye Cream, Face Cream Travel Kit for Women Teen Girls Mom Daughter Birthday TSA-friendly Sizes 5pcs', imageUrl: '/images/cosmetics/11.jpg' },
+    //         { name: 'LUXAZA', price: 10.99, description: 'Classic 3PCS Neutral Eyeshadow Stick Makeup Set, Metallic Shimmer Matte Cream Eye Shadow Eyeliner Brightener Pencil Crayon - D1', imageUrl: '/images/cosmetics/12.jpg' },
+    //         { name: 'EACHY', price: 11.99, description: 'EACHY Travel Makeup Bag,Large Capacity Cosmetic Bags for Women,Waterproof Portable Pouch Open Flat Toiletry Bag Make up Organizer with Divider and Handle', imageUrl: '/images/cosmetics/13.jpg' },
+    //         { name: 'YLNALO', price: 8.99, description: 'YLNALO Blackhead Remover Mask Kit, Charcoal Peel Off Facial Mask with Brush and Pimple Extractors, Deep Cleansing for Face Nose Blackhead Pores Acne, For All Skin Types (3.5 Fl.oz)', imageUrl: '/images/cosmetics/14.jpg' },
+    //         { name: 'Purederm', price: 4.99, description: 'Purederm Deep Purifying Yellow O2 Bubble Mask Turmeric (5 Pack) – Bubble Face Sheet Mask for Purifying & Vitalizing', imageUrl: '/images/cosmetics/15.jpg' },
            
-        ]
-    })
+    //     ]
+    // })
 }
 
 main()
