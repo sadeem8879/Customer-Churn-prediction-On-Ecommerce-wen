@@ -1,57 +1,103 @@
 import prisma from "../database/db.js";
 import bcrypt from "bcrypt";
 // import jwt from "jsonwebtoken";
-import { userschema, loginschema } from "../schema/user.schema.js";
+import { userschema, loginschema,checkoutSchema } from "../schema/user.schema.js";
 import "dotenv/config";
+import { z } from 'zod';
+
 
 class UserController {
+  // static async register(req, res) {
+
+  //   try {
+  //     // Check if user already exists
+  //     const { username, email, password } = req.body;
+
+  //     const Data = userschema.parse(req.body)
+
+  //     const hashpass = bcrypt.hashSync(password, 10)
+  //     const existingUser = await prisma.user.findUnique({
+  //       where: { email },
+  //     });
+  //     if (existingUser) {
+  //       return res.status(400).json({ error: "Email already in use" });
+  //     }
+  //     const Register = await prisma.user.create({
+  //       data: {
+  //         username,
+  //         email,
+  //         password: hashpass
+  //       }
+  //     })
+
+  //     // if (Register) {
+  //     //   return res.status(400).json({ error: "Username already exists" });
+  //     // }
+
+  //     res.status(201).json({ msg: "Login Successfully", data: Register })
+
+  //     // Hash password
+  //     // const hashedPassword = await bcrypt.hashSync(password, 10);
+
+  //     // Create user
+  //     // const newUser = await prisma.user.create({
+  //     //   data: {
+  //     //     username,
+  //     //     email,
+  //     //     password: hashedPassword,
+  //     //   },
+  //     // });
+
+  //     // Generate JWT token
+  //     // const token = jwt.sign({ id: newUser.id }, process.env.SECRET_KEY, { expiresIn: "1h" });
+  //     // console.log("Generated Token:", token);
+
+  //     // Send response with token
+  //     // return res.status(201).json({ msg: "User registered successfully", token, newUser });
+  //   } catch (error) {
+  //     if (error.name === "ZodError") {
+  //       return res.status(400).json({ error: error.errors });
+  //     }
+  //     console.error(error);
+  //     return res.status(500).json({ error: "Internal server error" });
+  //   }
+  // }
+
   static async register(req, res) {
-
     try {
-      // Check if user already exists
-      const { username, email, password } = req.body;
+      // Validate request body
+      const validatedData = userSchema.parse(req.body);
+      const { username, email, password, role } = validatedData;
 
-      const Data = userschema.parse(req.body)
-
-      const hashpass = bcrypt.hashSync(password, 10)
+      // Check if user with the same email already exists
       const existingUser = await prisma.user.findUnique({
         where: { email },
       });
+
       if (existingUser) {
         return res.status(400).json({ error: "Email already in use" });
       }
-      const Register = await prisma.user.create({
+
+      // Ensure only authorized users can create an admin account
+      if (role === "admin" && req.body.secretKey !== process.env.ADMIN_SECRET) {
+        return res.status(403).json({ error: "Unauthorized to create admin account" });
+      }
+
+      // Hash password
+      const hashpass = bcrypt.hashSync(password, 10);
+
+      // Create user (admin or user)
+      const newUser = await prisma.user.create({
         data: {
           username,
           email,
-          password: hashpass
-        }
-      })
+          password: hashpass,
+          role: role || "user", // Default to "user" if no role is provided
+        },
+      });
 
-      // if (Register) {
-      //   return res.status(400).json({ error: "Username already exists" });
-      // }
-
-      res.status(201).json({ msg: "Login Successfully", data: Register })
-
-      // Hash password
-      // const hashedPassword = await bcrypt.hashSync(password, 10);
-
-      // Create user
-      // const newUser = await prisma.user.create({
-      //   data: {
-      //     username,
-      //     email,
-      //     password: hashedPassword,
-      //   },
-      // });
-
-      // Generate JWT token
-      // const token = jwt.sign({ id: newUser.id }, process.env.SECRET_KEY, { expiresIn: "1h" });
-      // console.log("Generated Token:", token);
-
-      // Send response with token
-      // return res.status(201).json({ msg: "User registered successfully", token, newUser });
+      res.status(201).json({ msg: "User registered successfully", data: newUser });
+      
     } catch (error) {
       if (error.name === "ZodError") {
         return res.status(400).json({ error: error.errors });
@@ -60,8 +106,6 @@ class UserController {
       return res.status(500).json({ error: "Internal server error" });
     }
   }
-
-
   static async login(req, res) {
     // const { email, password } = req.body;
 
@@ -400,83 +444,94 @@ class UserController {
     }
   }
   static async buynow(req, res) {
-    const { productId, productType, quantity, name, email, address, paymentMethod } = req.body;
+    const { productId, productType, quantity, name, email, mobile, address, paymentMethod } = req.body;
 
-    // Validate input data
-    if (!productId || !productType || !quantity || !name || !email || !address || !paymentMethod) {
-        return res.status(400).json({ message: "All fields are required." });
+    if (!productId || !productType || !quantity || !name || !email || !mobile || !address || !paymentMethod) {
+        return res.status(400).json({ error: "All fields are required." });
     }
 
+    // Trim spaces and remove any non-numeric characters from mobile
+    req.body.mobile = req.body.mobile.trim();
+
+    console.log("Received Order Data:", req.body);
+
     try {
-        // Mapping for product models in Prisma
+        const Data = checkoutSchema.parse(req.body); // Validate the req.body directly
+        console.log("Validated Input:", Data);
+
+        const user = await prisma.user.findUnique({ where: { email } });
+        if (!user) {
+            return res.status(400).json({ message: "User with this email is not registered." });
+        }
+
+        if (user.email !== email) {
+            return res.status(400).json({ message: "Entered email does not match registered email." });
+        }
+
+        // Ensure entered email matches the registered email
+        if (user.email !== email) {
+            return res.status(400).json({ message: "Entered email does not match registered email." });
+        }
+
         const modelMapping = {
             MenProduct: prisma.menProduct,
             WomenProduct: prisma.womenProduct,
             KidsProduct: prisma.kidsProduct,
             AccessoriesProduct: prisma.accessoriesProduct,
-            CosmeticsProduct: prisma.cosmeticsProduct
+            CosmeticsProduct: prisma.cosmeticsProduct,
         };
 
-        // Check if productType is valid
         const productModel = modelMapping[productType];
         if (!productModel) {
-            return res.status(400).json({ 
-                message: `Invalid product type: ${productType}. Expected types: ${Object.keys(modelMapping).join(", ")}.` 
-            });
+            return res.status(400).json({ message: `Invalid product type: ${productType}.` });
         }
 
-        // Validate productId
-        const parsedProductId = parseInt(productId, 10);
-        if (isNaN(parsedProductId)) {
-            return res.status(400).json({ message: "Invalid productId provided." });
-        }
-
-        // Fetch product details
         const product = await productModel.findUnique({
-            where: { id: parsedProductId },
+            where: { id: parseInt(productId, 10) },
         });
 
         if (!product) {
             return res.status(404).json({ message: "Product not found." });
         }
 
-        // Validate quantity
         const parsedQuantity = parseInt(quantity, 10);
         if (isNaN(parsedQuantity) || parsedQuantity < 1) {
             return res.status(400).json({ message: "Invalid quantity provided." });
         }
 
-        // Calculate total price
         const totalPrice = product.price * parsedQuantity;
 
-        // Create new order in Prisma
         const newOrder = await prisma.order.create({
             data: {
-                productId: parsedProductId,
+                productId: parseInt(productId, 10),
                 quantity: parsedQuantity,
                 totalPrice,
                 customerName: name,
                 customerEmail: email,
+                customerMobile: mobile,
                 shippingAddress: address,
                 paymentMethod,
                 productType,
+                status: "Pending",
             },
         });
 
-        // Send success response
         res.status(201).json({
             message: "Order placed successfully!",
             orderId: newOrder.id,
         });
-
     } catch (error) {
         console.error("Error placing order:", error);
-        res.status(500).json({ 
-            message: "Failed to place order. Try again later.", 
-            error: error.message 
+        if (error instanceof z.ZodError) {
+            return res.status(400).json({ message: "Validation Error", errors: error.errors });
+        }
+        res.status(500).json({
+            message: "Failed to place order. Try again later.",
+            error: error.message,
         });
     }
 }
+
 
 static async  handleUserLogout(userId, sessionStartTime) {
   const date = new Date();  // Current date and time
@@ -539,7 +594,27 @@ static async  updateUserTimeSpent(userId) {
     }
   });
 }
+static async getChurnedCustomers(req, res) {
+  try {
+    const churnedUsers = await prisma.user.findMany({
+      where: { churn: 1 },  // Fetch only churned users
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        total_orders: true,
+        total_spent: true,
+        recency_days: true,
+        churn: true,
+      },
+    });
 
+    res.status(200).json(churnedUsers);
+  } catch (error) {
+    console.error("Error fetching churn data:", error);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+}
 
 
 }

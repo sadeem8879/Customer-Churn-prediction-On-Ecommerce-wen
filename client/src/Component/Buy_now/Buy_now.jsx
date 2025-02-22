@@ -50,9 +50,9 @@ const Buynow = () => {
   //     address: formData.address,
   //     paymentMethod: formData.paymentMethod,
   //   };
-  
+
   //   console.log("Sending order data:", orderData); // Log the data to verify
-  
+
 
   //   try {
   //     const response = await axios.post("http://localhost:8080/buynow", orderData);
@@ -67,7 +67,7 @@ const Buynow = () => {
   // };
   // const handleCheckout = async (e) => {
   //   e.preventDefault();
-  
+
   //   // Ensure you're accessing the correct productType from the passed state
   //   const orderData = {
   //     productId: product.id,
@@ -78,47 +78,47 @@ const Buynow = () => {
   //     address: formData.address,
   //     paymentMethod: formData.paymentMethod,
   //   };
-  
+
   //   console.log("Sending order data:", orderData); // Log to verify
-  
+
   //   try {
   //     axios.post('http://localhost:8080/buynow', orderData)
   //     .then(response => {
   //       alert('Order placed successfully:', response.status);
-        
+
   //     })
   //     .catch(error => {
   //       console.error('Error placing order:', error.response ? error.response.data : error.message);
   //     });
-    
+
   //   } catch (error) {
   //     console.error("Error placing order:", error);
   //     console.error("Error response:", error.response?.data);
   //   }
   // };
-  
+
 
   // Calculate the total price based on quantity
   const handleCheckout = async (e) => {
     e.preventDefault();
-  
-    if (!formData.name || !formData.email || !formData.address || !product.productType) {
-      alert('All fields are required.');
+
+    if (!formData.name || !formData.email || !formData.address || !formData.mobileNumber) {
+      alert("All fields are required.");
       return;
     }
-  
+
     const orderData = {
       productId: product.id,
-      productType: product.productType, // Ensure this field exists
+      productType: product.productType,
       quantity,
       name: formData.name,
       email: formData.email,
+      mobile: formData.mobileNumber, // ✅ Fixed key
       address: formData.address,
       paymentMethod: formData.paymentMethod,
     };
-  
     console.log("Sending order data:", orderData);
-  
+
     try {
       const response = await axios.post('http://localhost:8080/buynow', orderData);
       if (response.status === 201) {
@@ -129,8 +129,8 @@ const Buynow = () => {
       console.error("Error placing order:", error.response ? error.response.data : error.message);
     }
   };
-  
-  
+
+
   const totalPrice = (product.price * quantity).toFixed(2);
 
   return (
@@ -196,16 +196,30 @@ const Buynow = () => {
                 />
               </Form.Group>
               <Form.Group className="mb-3">
-                <Form.Label>Email Address</Form.Label>
+                <Form.Label>Email</Form.Label>
                 <Form.Control
                   type="email"
-                  placeholder="Enter your email"
+                  placeholder="Enter Email"
                   name="email"
                   value={formData.email}
                   onChange={handleInputChange}
                   required
                 />
               </Form.Group>
+
+              <Form.Group className="mb-3">
+                <Form.Label>Mobile Number</Form.Label>
+                <Form.Control
+                  type="tel"
+                  placeholder="Enter Mobile No."
+                  name="mobileNumber" // 🚨 This should match the key in formData
+                  value={formData.mobileNumber}
+                  onChange={handleInputChange}
+                  required
+                />
+
+              </Form.Group>
+
               <Form.Group className="mb-3">
                 <Form.Label>Shipping Address</Form.Label>
                 <Form.Control

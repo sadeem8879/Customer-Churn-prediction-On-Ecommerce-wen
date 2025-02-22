@@ -56,9 +56,12 @@ model Cart {
     userId            Int
     quantity          Int     @default(1)
     productType       String
-    user              User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+    isCheckedOut      Boolean @default(false)  // ✅ Add this field
+    createdAt         DateTime @default(now())
+
+    user              User? @relation(fields: [userId], references: [id], onDelete: Cascade)
     menProductId      Int?
-    menProduct        MenProduct? @relation("menProductToCart", fields: [menProductId], references: [id]) // Relation is here
+    menProduct        MenProduct? @relation("menProductToCart", fields: [menProductId], references: [id])
     womenProductId    Int?
     womenProduct      WomenProduct? @relation("womenProductToCart", fields: [womenProductId], references: [id])
     kidsProductId     Int?
@@ -67,7 +70,6 @@ model Cart {
     accessoriesProduct AccessoriesProduct? @relation("accessoriesProductToCart", fields: [accessoriesProductId], references: [id])
     cosmeticsProductId Int?
     cosmeticsProduct   CosmeticsProduct? @relation("cosmeticsProductToCart", fields: [cosmeticsProductId], references: [id])
-    createdAt         DateTime @default(now())
 }
 
 model User {
@@ -79,6 +81,8 @@ model User {
      profile   Profile?
       logins    UserLogin[]  // Correct: separate line
   timeSpent UserTimeSpent[] // Correct: separate line
+  role     String  @default("user") // "user" or "admin"
+
 }
 
 model Profile {
@@ -96,12 +100,17 @@ model Order {
   totalPrice      Float
   customerName    String
   customerEmail   String
+  customerMobile  String   // ✅ Now make it required
   shippingAddress String
   paymentMethod   String
   status          String   @default("Pending")
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }
+
+
+
+
 model UserLogin {
   id        String   @id @default(uuid())  // Unique ID for each login record
   userId    Int

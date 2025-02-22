@@ -4,6 +4,8 @@ import userController from "../controller/user.controller.js";
 import { authenticateToken } from "../middleware/authenticate.js";
 // import { authenticateUser } from "../middleware/authUser.js";
 import * as userActivity from "../controller/user.activity.controller.js";
+// import { authenticateToken } from "../middleware/authenticate.js";
+import adminAuth from "../middleware/adminAuth.js";
 
 
 const userRoute = Router()
@@ -24,6 +26,9 @@ userRoute.get("/cart/:userId", userController.cart_fetch);
 userRoute.delete("/cart/:cartId", userController.cart_delete);
 userRoute.put("/cart/:id", userController.cart_update);
 userRoute.post("/buynow", userController.buynow); 
+userRoute.put("/cart/:id", userController.getChurnedCustomers);
+// userRoute.get("/churn-data", authenticateToken, adminAuth, userController.getChurnedCustomers);
+userRoute.get("/churn-data",  adminAuth, userController.getChurnedCustomers);
 
 userRoute.post("/track-login", userActivity.trackLogin);
 userRoute.post("/track-time", userActivity.trackTimeSpent);  // Changed to POST based on your method

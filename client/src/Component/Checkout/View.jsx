@@ -182,6 +182,17 @@ const Checkout = () => {
   const total = product.price * quantity;
 
   const handleBuyNow = (product, productType) => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      navigate('/');
+      return;
+    }
+
+    const parsedUserId = parseInt(userId, 10);
+    if (isNaN(parsedUserId)) {
+      console.error("Invalid user ID:", userId);
+      return;
+    }
     console.log('Sending order data:', { productId: product.id, productType, quantity });
     navigate('/buynow', {
       state: {

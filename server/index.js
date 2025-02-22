@@ -59,6 +59,10 @@ import cookieParser from "cookie-parser";
 import router from "./routes/index.js"; // Import your main routes (which includes userRoute)
 import path from 'path';
 import userRoute from './routes/user.route.js'; // Correct import is here
+import "./middleware/cron.js";  // This will run the cron job automatically
+import dotenv from "dotenv";
+dotenv.config();
+
 const app = express();
 const PORT = 8080;
 
@@ -70,6 +74,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // ✅ Fixes form data issues
 app.use(cookieParser());
 
 const __dirname = path.resolve();

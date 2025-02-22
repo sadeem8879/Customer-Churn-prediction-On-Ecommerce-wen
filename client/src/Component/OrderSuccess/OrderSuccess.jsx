@@ -24,7 +24,7 @@ const OrderSuccess = () => {
 
         // Redirect after 5 seconds
         const timer = setTimeout(() => {
-            navigate("/");
+            navigate("/home");
         }, 5000);
 
         return () => clearTimeout(timer);
