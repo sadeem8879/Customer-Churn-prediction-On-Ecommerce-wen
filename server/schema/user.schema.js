@@ -4,26 +4,37 @@ import prisma from "../database/db.js";
 export const userschema = z
     .object({
         username: z
-            .string({ message: "this field is required" })
-            .min(3, { message: "Name should be atleast 3 character" })
-            .max(15, { message: "Name should be 15 character only" })
-            .regex(/^[a-zA-Z\s]+$/, { message: "Username should only contain letters and spaces" }),
+        .string({ message: "This field is required" })
+        .min(3, { message: "Name should be at least 3 characters" })
+        .max(15, { message: "Name should be 15 characters only" })
+        .regex(/^[a-zA-Z\s]+$/, { message: "Username should only contain letters and spaces" }),
 
-        password: z
-            .string({ message: "this field is required" })
-            .min(6, { message: "password should be atleast 6 character" })
-            .max(19, { message: "Name should be 19 character only" })
-            .regex(/^(?=.*[A-Z])(?=.*\d).+$/, {
-                message: "Password must contain at least one uppercase letter and one number",
-            }),
+    password: z
+        .string({ message: "This field is required" })
+        .min(6, { message: "Password should be at least 6 characters" })
+        .max(19, { message: "Password should be 19 characters only" })
+        .regex(/^(?=.*[A-Z])(?=.*\d).+$/, {
+            message: "Password must contain at least one uppercase letter and one number",
+        }),
 
-        email: z
-            .string({ message: "This field is required" })
-            .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, {
-                message: "Email must be a valid email address",
-            }),
-        role: z.enum(["user", "admin"]).optional(), // Role can be "user" or "admin", defaults to "user"
+    email: z
+        .string({ message: "This field is required" })
+        .regex(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/, {
+            message: "Email must be a valid email address",
+        }),
 
+    role: z.enum(["user", "admin"]).default("user"), // Allows both "user" and "admin"
+
+    gender: z.enum(["male", "female"]), // Ensure this matches frontend values
+
+    age: z.string()
+        .transform(Number)
+        .refine(val => val > 0, {
+            message: "Age must be a positive number"
+        })
+        .optional(),
+
+    state: z.string({ required_error: "State is required" })
     });
 
 export const loginschema = z

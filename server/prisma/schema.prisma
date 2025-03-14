@@ -73,17 +73,28 @@ model Cart {
 }
 
 model User {
-    id       Int      @id @default(autoincrement())
-    username String   @unique
-    email    String   @unique
-    password String
-    carts    Cart[]
-     profile   Profile?
-      logins    UserLogin[]  // Correct: separate line
-  timeSpent UserTimeSpent[] // Correct: separate line
-  role     String  @default("user") // "user" or "admin"
-
+    id        Int             @id @default(autoincrement())
+    username  String          @unique
+    email     String          @unique
+    password  String
+    carts     Cart[]
+    profile   Profile?
+    logins    UserLogin[]
+    timeSpent UserTimeSpent[]
+    role      String          @default("user") // "user" or "admin"
+    age       Int?            // Added age field (optional)
+    state     String?         // Added state field (optional)
+    gender    String?
 }
+model Admin {
+  id        String  @id @default(uuid())
+  username  String  @unique
+  email     String  @unique
+  password  String
+  secretKey String
+  createdAt DateTime @default(now())
+}
+
 
 model Profile {
     id      Int  @id @default(autoincrement())

@@ -18,12 +18,16 @@ import Buy_now from "./Component/Buy_now/Buy_now"
 import { CartProvider } from './Context/CartContext';  // Import CartProvider
 import OrderSuccess from "./Component/OrderSuccess/OrderSuccess";
 import useTimeTracking from "./Component/UserTrack/UserTrack";  // Importing your custom hook
-import AdminDashboard from './Component/Admin/Admin';
-
+import Admin from './Component/Admin/Admin';
+import AdminLogin from "./Component/Adminlogin/Adminlogin"
 function App() {
   const [userId, setUserId] = useState(localStorage.getItem('userId') || null);
   const [startTime, setStartTime] = useState(null);
 
+  const ProtectedAdminRoute = ({ children }) => {
+    const isAdmin = localStorage.getItem('isAdminAuthenticated') === 'true';
+    return isAdmin ? children : <Navigate to="/admin-login" />;
+  };
   // Login function to set userId and track login time
   const handleLogin = async (userId) => {
     console.log('Login function triggered with userId:', userId);
@@ -39,6 +43,8 @@ function App() {
 
   // Logout function to remove userId from localStorage
   const handleLogout = () => {
+    localStorage.removeItem("adminId");
+    localStorage.removeItem("isAdminAuthenticated");
     localStorage.removeItem('userId');
     setUserId(null);
   };
@@ -83,6 +89,7 @@ function App() {
   
     setStartTime(Date.now()); // Initial start time
   
+
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("beforeunload", trackTime);
@@ -110,7 +117,9 @@ function App() {
           <Route path="/product" element={<View />} />
           <Route path="/buynow" element={<Buy_now />} />
           <Route path="/order-success" element={<OrderSuccess />} />
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/admin-login" element={<AdminLogin />} />
+          <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
 
         </Routes>
       </BrowserRouter>

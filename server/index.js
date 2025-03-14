@@ -60,9 +60,9 @@ import router from "./routes/index.js"; // Import your main routes (which includ
 import path from 'path';
 import userRoute from './routes/user.route.js'; // Correct import is here
 import "./middleware/cron.js";  // This will run the cron job automatically
-import dotenv from "dotenv";
-dotenv.config();
-
+// import dotenv from "dotenv";
+// dotenv.config();
+import "dotenv/config"
 const app = express();
 const PORT = 8080;
 
@@ -70,9 +70,15 @@ app.use(cors({
     origin: "http://localhost:5173",
     credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
+    allowedHeaders: "Content-Type, Authorization, admin-id" // Allow admin-id header
 }));
 
+// app.use((req, res, next) => {
+//     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
+//     console.log('Headers:', req.headers);
+//     console.log('Body:', req.body); // Log the request body
+//     next();
+// });
 app.use(express.json());
 app.use(express.urlencoded({ extended: true })); // ✅ Fixes form data issues
 app.use(cookieParser());
@@ -82,7 +88,7 @@ app.use('/images', express.static(path.join(__dirname, 'images')));
 app.use('/api/activity', userRoute); // Mount userRoute under /api/activity
 
 app.use(router); // Use the combined routes
-
+console.log(process.env.SECRET_KEY)
 app.listen(PORT, () => {
     console.log(`Server is running on http://localhost:${PORT}`);
 });
