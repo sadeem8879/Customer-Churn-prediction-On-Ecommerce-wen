@@ -1216,7 +1216,7 @@
 //                 <Table striped bordered hover>
 //                     <thead>
 //                         <tr>
-                                
+
 //                             <th>State</th>
 //                             <th>Gender</th>
 //                             <th>Age</th>
@@ -1251,6 +1251,1045 @@
 // export default AdminDashboard;
 
 
+// import axios from "axios";
+// import { useState, useEffect } from "react";
+// import { Table, Button, Container, Spinner, Alert, Card, Row, Col } from "react-bootstrap";
+// import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, LabelList } from "recharts";
+// import { useNavigate } from "react-router-dom";
+
+// // Define colors for different categories
+// const COLORS = {
+//     churned: "#FF6384",
+//     active: "#4CAF50",
+//     state: "#FFCE56",
+//     gender: ["#4BC0C8", "#FF9F40", "#9966CC", "#36A2EB"],
+//     age: ["#E0F2F7", "#B3E5FC", "#4FC3F7", "#03A9F4", "#0288D1"],
+//     highRisk: "#FF0000",   // Red for high risk
+//     mediumRisk: "#FF8000", // Orange for medium risk
+//     lowRisk: "#00FF00",    // Green for low risk
+// };
+
+// const AdminDashboard = () => {
+//     const [riskStats, setRiskStats] = useState([]);
+//     const [customers, setCustomers] = useState([]);
+//     const [loading, setLoading] = useState(false);
+//     const [error, setError] = useState(null);
+//     const [churnByState, setChurnByState] = useState([]);
+//     const [churnByGender, setChurnByGender] = useState([]);
+//     const [churnByAge, setChurnByAge] = useState([]);
+//     const [churnStats, setChurnStats] = useState([]);
+//     const [totalCustomers, setTotalCustomers] = useState(0);
+//     const [pagination, setPagination] = useState({ page: 1, perPage: 10 });
+
+//     const navigate = useNavigate();
+//     const churnedCustomers = customers.length;
+//     const activeCount = totalCustomers - churnedCustomers;
+
+//     const pieData = [
+//         { name: "Churned", value: churnedCustomers, color: COLORS.churned },
+//         { name: "Active", value: activeCount > 0 ? activeCount : 0, color: COLORS.active }  // Ensure activeCount is always non-negative
+//     ];
+//     useEffect(() => {
+//         fetchRiskStats(); // Fetch risk stats on mount
+//     }, []);
+
+
+//     useEffect(() => {
+//         if (localStorage.getItem("isAdminAuthenticated") !== "true") {
+//             navigate("/admin-login");
+//         }
+//         fetchCustomerData();
+//         fetchTotalCustomers();
+//     }, []);
+
+//     useEffect(() => {
+//         fetchChurnByAge();
+//     }, []);
+
+//     // Fetch churn by age data with dynamic color rendering
+//     const fetchChurnByAge = async () => {
+//         try {
+//             const response = await axios.get("http://localhost:8080/churned-age", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+
+//             if (!response.data || !Array.isArray(response.data)) {
+//                 console.error("Invalid churn by age data:", response.data);
+//                 return;
+//             }
+
+//             const formattedData = response.data.map((entry, index) => ({
+//                 ageRange: entry.ageRange || "Unknown",
+//                 churnPercentage: isNaN(parseFloat(entry.churnPercentage)) ? 0 : parseFloat(entry.churnPercentage),
+//                 color: COLORS.age[index % COLORS.age.length]  // Dynamic color based on index
+//             }));
+
+//             console.log("Churn by Age Data:", formattedData);
+//             setChurnByAge(formattedData);
+//         } catch (error) {
+//             console.error("Error fetching churn by age data:", error);
+//         }
+//     };
+
+//     // Fetch total customers count
+//     const fetchTotalCustomers = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/total-customers", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setTotalCustomers(data.totalCustomers);
+//         } catch (error) {
+//             console.error("Error fetching total customers:", error);
+//         }
+//     };
+//     const fetchRiskStats = async () => {
+//         try {
+//             const response = await axios.get("http://localhost:8080/churn-stats", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+
+//             console.log("Fetched Risk Stats:", response.data); // Debugging
+
+//             if (!response.data || typeof response.data !== "object" || Object.keys(response.data).length === 0) {
+//                 console.error("No risk data available or incorrect format!");
+//                 setRiskStats({ high_risk: 0, medium_risk: 0, low_risk: 0 }); // Default values
+//                 return;
+//             }
+
+//             setRiskStats(response.data);
+//         } catch (err) {
+//             setError("Error fetching risk stats");
+//             console.error("Error fetching risk stats:", err);
+//         }
+//     };
+
+//     const riskData = riskStats && Object.keys(riskStats).length > 0 ? [
+//         { name: "High Risk", value: riskStats.high_risk || 0, color: COLORS.highRisk },
+//         { name: "Medium Risk", value: riskStats.medium_risk || 0, color: COLORS.mediumRisk },
+//         { name: "Low Risk", value: riskStats.low_risk || 0, color: COLORS.lowRisk },
+//     ] : [
+//         { name: "High Risk", value: 0, color: COLORS.highRisk },
+//         { name: "Medium Risk", value: 0, color: COLORS.mediumRisk },
+//         { name: "Low Risk", value: 0, color: COLORS.lowRisk }
+//     ];
+
+
+//     // Fetch customer data with churn analytics
+//     const fetchCustomerData = async () => {
+//         setLoading(true);
+//         setError(null);
+//         try {
+//             const adminId = localStorage.getItem("adminId");
+//             if (!adminId) {
+//                 setError("Admin ID missing. Please login.");
+//                 navigate("/admin-login");
+//                 return;
+//             }
+
+//             const [customersData, stateData, genderData, ageData, statsData] = await Promise.all([
+//                 axios.get("http://localhost:8080/churned-customers", { headers: { "admin-id": adminId }, withCredentials: true }),
+//                 axios.get("http://localhost:8080/churned-state", { headers: { "admin-id": adminId }, withCredentials: true }),
+//                 axios.get("http://localhost:8080/churned-gender", { headers: { "admin-id": adminId }, withCredentials: true }),
+//                 axios.get("http://localhost:8080/churned-age", { headers: { "admin-id": adminId }, withCredentials: true }),
+//                 axios.get("http://localhost:8080/churn-stats")
+//             ]);
+
+//             console.log("Churn Stats Data:", statsData.data); // Log this data to verify the structure
+//             setCustomers(customersData.data);
+//             setChurnByState(stateData.data);
+//             setChurnByGender(genderData.data.map(g => ({ gender: g.gender, customer_count: parseInt(g.customer_count, 10) })));
+//             setChurnByAge(ageData.data.map(a => ({ ageRange: a.ageRange, churnPercentage: parseFloat(a.churnPercentage) })));
+//             setChurnStats(statsData.data);
+//         } catch (error) {
+//             setError("Error fetching data. Please try again later.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     const aggregatedData = customers.reduce((acc, item) => {
+//         if (!acc[item.state]) {
+//             acc[item.state] = {
+//                 totalPurchases: 0,
+//                 count: 0,
+//                 customers: [],
+//             };
+//         }
+//         acc[item.state].totalPurchases += item.total;
+//         acc[item.state].count += 1;
+//         acc[item.state].customers.push(item);
+
+//         return acc;
+//     }, {});
+
+//     console.log(aggregatedData);
+
+//     const highRiskCustomers = customers.filter(item => item.high_risk === 1);
+//     console.log(highRiskCustomers);
+
+//     // Pagination handling for churned customers
+//     const handlePageChange = (newPage) => {
+//         setPagination({ ...pagination, page: newPage });
+//     };
+
+
+//     return (
+//         <Container className="mt-4">
+//             <h2 className="text-center mb-4">📊 Admin Dashboard - Customer Churn Analytics</h2>
+
+//             {error && <Alert variant="danger">{error}</Alert>}
+
+//             <div className="d-flex justify-content-center mb-3">
+//                 <Button variant="primary" onClick={fetchCustomerData} disabled={loading}>
+//                     {loading ? <Spinner size="sm" animation="border" /> : "Refresh Data"}
+//                 </Button>
+//             </div>
+
+//             {/* Dashboard Overview */}
+//             <Row>
+//                 <Col md={12}>
+//                     <Card className="shadow mb-4">
+//                         <Card.Body>
+//                             <Card.Title>Dashboard Overview</Card.Title>
+//                             <div className="d-flex justify-content-between">
+//                                 <div>
+//                                     <h5>Total Customers: {totalCustomers}</h5>
+//                                     <h5>Churned Customers: {churnedCustomers}</h5>
+//                                     <h5>Active Customers: {activeCount >= 0 ? activeCount : 0}</h5>
+//                                 </div>
+//                                 <div>
+//                                     <h5>High Risk Churn: {churnStats?.high_risk || "N/A"}</h5>
+//                                     <h5>Medium Risk Churn: {churnStats?.medium_risk || "N/A"}</h5>
+//                                     <h5>Low Risk Churn: {churnStats?.low_risk || "N/A"}</h5>
+//                                 </div>
+//                             </div>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+
+//             {/* Churn Analytics Charts */}
+//             <Row>
+//                 <Col md={6}>
+//                     <Card className="shadow">
+//                         <Card.Body>
+//                             <Card.Title>Customer Churn Statistics</Card.Title>
+//                             <ResponsiveContainer width="100%" height={360}>
+//                                 <PieChart>
+//                                     <Pie
+//                                         data={pieData}
+//                                         cx="50%"
+//                                         cy="50%"
+//                                         outerRadius={100}
+//                                         dataKey="value"
+//                                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+//                                     >
+//                                         {pieData.map((entry, index) => (
+//                                             <Cell key={`cell-${index}`} fill={entry.color} />
+//                                         ))}
+//                                     </Pie>
+//                                     <Tooltip />
+//                                     <Legend />
+//                                 </PieChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+
+//                 <Col md={6}>
+//                     <Card className="shadow">
+//                         <Card.Body>
+//                             <Card.Title>Churn by State</Card.Title>
+//                             <ResponsiveContainer width="100%" height={360}>
+//                                 <BarChart data={churnByState}>
+//                                     <CartesianGrid strokeDasharray="3 3" />
+//                                     <XAxis dataKey="state" />
+//                                     <YAxis />
+//                                     <Tooltip />
+//                                     <Legend />
+//                                     <Bar dataKey="customer_count" fill={COLORS.state}>
+//                                         <LabelList dataKey="customer_count" position="top" />
+//                                     </Bar>
+//                                 </BarChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+
+//                 <Col md={6}>
+//                     <Card>
+//                         <Card.Body>
+//                             <Card.Title>Churn by Gender</Card.Title>
+//                             <ResponsiveContainer width="100%" height={300}>
+//                                 <PieChart>
+//                                     <Pie data={churnByGender} cx="50%" cy="50%" outerRadius={100} dataKey="customer_count" nameKey="gender">
+//                                         {churnByGender.map((entry, index) => (
+//                                             <Cell key={`cell-${index}`} fill={COLORS.gender[index % COLORS.gender.length]} />
+//                                         ))}
+//                                     </Pie>
+//                                     <Tooltip />
+//                                     <Legend />
+//                                 </PieChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//                 <Col md={6}>
+//                     <Card className="shadow">
+//                         <Card.Body>
+//                             <Card.Title>Risk Distribution</Card.Title>
+//                             {riskData.length > 0 && riskData.some(data => data.value > 0) ? (
+//                                 <ResponsiveContainer width="100%" height={300}>
+//                                     <BarChart data={riskData}>
+//                                         <CartesianGrid strokeDasharray="3 3" />
+//                                         <XAxis dataKey="name" />
+//                                         <YAxis />
+//                                         <Tooltip />
+//                                         <Legend />
+//                                         <Bar dataKey="value">
+//                                             {riskData.map((entry, index) => (
+//                                                 <Cell key={`cell-${index}`} fill={entry.color} />
+//                                             ))}
+//                                             <LabelList dataKey="value" position="top" />
+//                                         </Bar>
+//                                     </BarChart>
+//                                 </ResponsiveContainer>
+//                             ) : (
+//                                 <p className="text-center">No risk distribution data available</p>
+//                             )}
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+
+
+//                 <Col md={6}>
+//                     <Card>
+//                         <Card.Body>
+//                             <Card.Title>Churn by Age</Card.Title>
+//                             {churnByAge.length > 0 ? (
+//                                 <ResponsiveContainer width="100%" height={360}>
+//                                     <BarChart data={churnByAge}>
+//                                         <CartesianGrid strokeDasharray="3 3" />
+//                                         <XAxis dataKey="ageRange" />
+//                                         <YAxis />
+//                                         <Tooltip />
+//                                         <Legend />
+//                                         <Bar dataKey="churnPercentage" fill="#FFCE56">
+//                                             <LabelList dataKey="churnPercentage" position="top" />
+//                                         </Bar>
+//                                     </BarChart>
+//                                 </ResponsiveContainer>
+//                             ) : (
+//                                 <p>No data available</p>
+//                             )}
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+
+//             {/* Churned Customers Table */}
+//             <h3 className="mt-4">Churned Customers</h3>
+//             {churnStats.length > 0 ? (
+//                 <Table striped bordered hover>
+//                     <thead>
+//                         <tr>
+//                             <th>State</th>
+//                             <th>Gender</th>
+//                             <th>Age</th>
+//                             <th>Total Purchases</th>
+//                             <th>High Risk</th>
+//                         </tr>
+//                     </thead>
+//                     <tbody>
+//                         {churnStats.map((row, index) => (
+//                             <tr key={index}>
+//                                 <td>{row.state}</td>
+//                                 <td>{row.gender}</td>
+//                                 <td>{row.age}</td>
+//                                 <td>{row.totalPurchases}</td>
+//                                 <td>{row.highRisk ? "Yes" : "No"}</td>
+//                             </tr>
+//                         ))}
+//                     </tbody>
+//                 </Table>
+//             ) : (
+//                 <p>No churned customers available</p>
+//             )}
+//         </Container>
+//     );
+// };
+
+// export default AdminDashboard;
+
+
+
+// import axios from "axios";
+// import { useState, useEffect } from "react";
+// import { Table, Button, Container, Spinner, Alert, Card, Row, Col } from "react-bootstrap";
+// import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, LabelList } from "recharts";
+// import { useNavigate } from "react-router-dom";
+
+// // Define colors for different categories
+// const COLORS = {
+//     churned: "#FF6384",
+//     active: "#4CAF50",
+//     state: "#FFCE56",
+//     gender: ["#4BC0C8", "#FF9F40", "#9966CC", "#36A2EB"],
+//     age: ["#E0F2F7", "#B3E5FC", "#4FC3F7", "#03A9F4", "#0288D1"],
+//     highRisk: "#FF0000",   // Red for high risk
+//     mediumRisk: "#FF8000", // Orange for medium risk
+//     lowRisk: "#00FF00",    // Green for low risk
+// };
+
+// const AdminDashboard = () => {
+//     const [customers, setCustomers] = useState([]);
+//     const [loading, setLoading] = useState(false);
+//     const [error, setError] = useState(null);
+//     const [churnByState, setChurnByState] = useState([]);
+//     const [churnByGender, setChurnByGender] = useState([]);
+//     const [churnByAge, setChurnByAge] = useState([]);
+//     const [riskStats, setRiskStats] = useState([]);
+//     const [churnStats, setChurnStats] = useState({ high_risk: 0, medium_risk: 0, low_risk: 0 });
+//     const [totalCustomers, setTotalCustomers] = useState(0);
+
+//     const navigate = useNavigate();
+
+//     useEffect(() => {
+//         if (localStorage.getItem("isAdminAuthenticated") !== "true") {
+//             navigate("/admin-login");
+//         }
+//         fetchCustomerData();
+//         fetchTotalCustomers();
+//         fetchChurnByState();
+//         fetchChurnByGender();
+//         fetchChurnByAge();
+//         fetchRiskStats();
+//     }, []);
+
+//     // Fetch total customers count
+//     const fetchTotalCustomers = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/total-customers", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setTotalCustomers(data.totalCustomers);
+//         } catch (error) {
+//             console.error("Error fetching total customers:", error);
+//         }
+//     };
+
+//     // Fetch churned customers data
+//     const fetchCustomerData = async () => {
+//         setLoading(true);
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/churned-customers", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setCustomers(data);
+//         } catch (error) {
+//             setError("Error fetching customer data.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     // Fetch churn statistics by state
+//     const fetchChurnByState = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/churned-state", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setChurnByState(data);
+//         } catch (error) {
+//             console.error("Error fetching churn by state data:", error);
+//         }
+//     };
+
+//     // Fetch churn statistics by gender
+//     const fetchChurnByGender = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/churned-gender", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setChurnByGender(data.map(g => ({ gender: g.gender, customer_count: parseInt(g.customer_count, 10) })));
+//         } catch (error) {
+//             console.error("Error fetching churn by gender data:", error);
+//         }
+//     };
+
+//     // Fetch churn statistics by age
+//     const fetchChurnByAge = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/churned-age", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setChurnByAge(data.map((entry, index) => ({
+//                 ageRange: entry.ageRange || "Unknown",
+//                 churnPercentage: parseFloat(entry.churnPercentage) || 0,
+//                 color: COLORS.age[index % COLORS.age.length]
+//             })));
+//         } catch (error) {
+//             console.error("Error fetching churn by age data:", error);
+//         }
+//     };
+
+//     // Fetch risk distribution stats
+//     const fetchRiskStats = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/churn-stats", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setChurnStats(data || { high_risk: 0, medium_risk: 0, low_risk: 0 });
+//         } catch (error) {
+//             console.error("Error fetching risk stats:", error);
+//         }
+//     };
+
+//     return (
+//         <Container className="mt-4">
+//             <h2 className="text-center mb-4">📊 Admin Dashboard - Customer Churn Analytics</h2>
+
+//             {error && <Alert variant="danger">{error}</Alert>}
+
+//              <div className="d-flex justify-content-center mb-3">
+//                  <Button variant="primary" onClick={fetchCustomerData} disabled={loading}>
+//                      {loading ? <Spinner size="sm" animation="border" /> : "Refresh Data"}
+//                  </Button>
+//              </div>
+
+//              {/* Dashboard Overview */}
+//              <Row>
+//                  <Col md={12}>
+//                      <Card className="shadow mb-4">
+//                          <Card.Body>
+//                              <Card.Title>Dashboard Overview</Card.Title>
+//                              <div className="d-flex justify-content-between">
+//                                  <div>
+//                                      <h5>Total Customers: {totalCustomers}</h5>
+//                                      <h5>Churned Customers: {churnedCustomers}</h5>
+//                                      <h5>Active Customers: {activeCount >= 0 ? activeCount : 0}</h5>
+//                                  </div>
+//                                  <div>
+//                                      <h5>High Risk Churn: {churnStats?.high_risk || "N/A"}</h5>
+//                                      <h5>Medium Risk Churn: {churnStats?.medium_risk || "N/A"}</h5>
+//                                      <h5>Low Risk Churn: {churnStats?.low_risk || "N/A"}</h5>
+//                                  </div>
+//                              </div>
+//                          </Card.Body>
+//                      </Card>
+//                  </Col>
+//              </Row>
+
+//              {/* Churn Analytics Charts */}
+//              <Row>
+//                  <Col md={6}>
+//                      <Card className="shadow">
+//                          <Card.Body>
+//                              <Card.Title>Customer Churn Statistics</Card.Title>
+//                              <ResponsiveContainer width="100%" height={360}>
+//                                  <PieChart>
+//                            <Pie
+//                                         data={pieData}
+//                                         cx="50%"
+//                                         cy="50%"
+//                                         outerRadius={100}
+//                                         dataKey="value"
+//                                         label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+//                                     >
+//                                         {pieData.map((entry, index) => (
+//                                             <Cell key={`cell-${index}`} fill={entry.color} />
+//                                         ))}
+//                                     </Pie>
+//                                     <Tooltip />
+//                                     <Legend />
+//                                 </PieChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+
+
+//                 <Col md={6}>
+//                     <Card className="shadow">
+//                         <Card.Body>
+//                             <Card.Title>Risk Distribution</Card.Title>
+//                             <ResponsiveContainer width="100%" height={300}>
+//                                 <BarChart data={[
+//                                     { name: "High Risk", value: churnStats.high_risk, color: COLORS.highRisk },
+//                                     { name: "Medium Risk", value: churnStats.medium_risk, color: COLORS.mediumRisk },
+//                                     { name: "Low Risk", value: churnStats.low_risk, color: COLORS.lowRisk }
+//                                 ]}>
+//                                     <XAxis dataKey="name" />
+//                                     <YAxis />
+//                                     <Tooltip />
+//                                     <Legend />
+//                                     <Bar dataKey="value">
+//                                         <LabelList dataKey="value" position="top" />
+//                                     </Bar>
+//                                 </BarChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//                 <Col md={6}>
+//                     <Card className="shadow">
+//                         <Card.Body>
+//                             <Card.Title>Churn by State</Card.Title>
+//                             <ResponsiveContainer width="100%" height={360}>
+//                                 <BarChart data={churnByState}>
+//                                     <CartesianGrid strokeDasharray="3 3" />
+//                                     <XAxis dataKey="state" />
+//                                     <YAxis />
+//                                     <Tooltip />
+//                                     <Legend />
+//                                     <Bar dataKey="customer_count" fill={COLORS.state}>
+//                                         <LabelList dataKey="customer_count" position="top" />
+//                                     </Bar>
+//                                 </BarChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+
+//                 <Col md={6}>
+//                     <Card>
+//                         <Card.Body>
+//                             <Card.Title>Churn by Gender</Card.Title>
+//                             <ResponsiveContainer width="100%" height={300}>
+//                                 <PieChart>
+//                                     <Pie data={churnByGender} cx="50%" cy="50%" outerRadius={100} dataKey="customer_count" nameKey="gender">
+//                                         {churnByGender.map((entry, index) => (
+//                                             <Cell key={`cell-${index}`} fill={COLORS.gender[index % COLORS.gender.length]} />
+//                                         ))}
+//                                     </Pie>
+//                                     <Tooltip />
+//                                     <Legend />
+//                                 </PieChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+//             <Row>
+
+//             <Col md={6}>
+//                     <Card>
+//                         <Card.Body>
+//                             <Card.Title>Churn by Age</Card.Title>
+//                             {churnByAge.length > 0 ? (
+//                                 <ResponsiveContainer width="100%" height={360}>
+//                                     <BarChart data={churnByAge}>
+//                                         <CartesianGrid strokeDasharray="3 3" />
+//                                         <XAxis dataKey="ageRange" />
+//                                         <YAxis />
+//                                         <Tooltip />
+//                                         <Legend />
+//                                         <Bar dataKey="churnPercentage" fill="#FFCE56">
+//                                             <LabelList dataKey="churnPercentage" position="top" />
+//                                         </Bar>
+//                                     </BarChart>
+//                                 </ResponsiveContainer>
+//                             ) : (
+//                                 <p>No data available</p>
+//                             )}
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+//             <h3 className="mt-4">Churned Customers</h3>
+//             <Table striped bordered hover>
+//                 <thead>
+//                     <tr>
+//                         <th>State</th>
+//                         <th>Gender</th>
+//                         <th>Age</th>
+//                     </tr>
+//                 </thead>
+//                 <tbody>
+//                     {customers.map((row, index) => (
+//                         <tr key={index}>
+//                             <td>{row.state}</td>
+//                             <td>{row.gender}</td>
+//                             <td>{row.age}</td>
+//                         </tr>
+//                     ))}
+//                 </tbody>
+//             </Table>
+//         </Container>
+//     );
+// };
+
+// export default AdminDashboard;
+
+
+// import axios from "axios";
+// import { useState, useEffect } from "react";
+// import { Table, Button, Container, Spinner, Alert, Card, Row, Col } from "react-bootstrap";
+// import { PieChart, Pie, Cell, Tooltip, BarChart, Bar, XAxis, YAxis, CartesianGrid, Legend, ResponsiveContainer, LabelList } from "recharts";
+// import { useNavigate } from "react-router-dom";
+
+// // Define colors for different categories
+// const COLORS = {
+//     churned: "#FF6384",
+//     active: "#4CAF50",
+//     state: "#FFCE56",
+//     gender: ["#4BC0C8", "#FF9F40", "#9966CC", "#36A2EB"],
+//     age: ["#E0F2F7", "#B3E5FC", "#4FC3F7", "#03A9F4", "#0288D1"],
+//     highRisk: "#FF0000",
+//     mediumRisk: "#FF8000",
+//     lowRisk: "#00FF00",
+// };
+
+// const AdminDashboard = () => {
+//     const [customers, setCustomers] = useState([]);
+//     const [loading, setLoading] = useState(false);
+//     const [error, setError] = useState(null);
+//     const [churnByState, setChurnByState] = useState([]);
+//     const [churnByGender, setChurnByGender] = useState([]);
+//     const [churnByAge, setChurnByAge] = useState([]);
+//     const [riskStats, setRiskStats] = useState({ high_risk: 0, medium_risk: 0, low_risk: 0 });
+//     const [churnStats, setChurnStats] = useState({ high_risk: 0, medium_risk: 0, low_risk: 0 });
+//     const [totalCustomers, setTotalCustomers] = useState(0);
+//     const [activeCount, setActiveCount] = useState(0);
+
+//     const navigate = useNavigate();
+
+//     useEffect(() => {
+//         if (localStorage.getItem("isAdminAuthenticated") !== "true") {
+//             navigate("/admin-login");
+//         }
+//         fetchCustomerData();
+//         fetchTotalCustomers();
+//         fetchChurnByState();
+//         fetchChurnByGender();
+//         fetchChurnByAge();
+//         fetchRiskStats();
+//         fetchActiveCustomers();
+//     }, []);
+
+//     // Fetch total customers count
+//     const fetchTotalCustomers = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/total-customers", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setTotalCustomers(data.totalCustomers);
+//         } catch (error) {
+//             console.error("Error fetching total customers:", error);
+//         }
+//     };
+
+//     // Fetch churned customers data
+//     const fetchCustomerData = async () => {
+//         setLoading(true);
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/churned-customers", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setCustomers(data);
+//         } catch (error) {
+//             setError("Error fetching customer data.");
+//         } finally {
+//             setLoading(false);
+//         }
+//     };
+
+//     // Fetch churn statistics by state
+//     const fetchChurnByState = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/churned-state", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setChurnByState(data);
+//         } catch (error) {
+//             console.error("Error fetching churn by state data:", error);
+//         }
+//     };
+
+//     // Fetch churn statistics by gender
+//     const fetchChurnByGender = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/churned-gender", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setChurnByGender(data.map(g => ({ gender: g.gender, customer_count: parseInt(g.customer_count, 10) })));
+//         } catch (error) {
+//             console.error("Error fetching churn by gender data:", error);
+//         }
+//     };
+
+//     // Fetch churn statistics by age
+//     const fetchChurnByAge = async () => {
+//         try {
+//             const { data } = await axios.get("http://localhost:8080/churned-age", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+//             setChurnByAge(data.map((entry, index) => ({
+//                 ageRange: entry.ageRange || "Unknown",
+//                 churnPercentage: parseFloat(entry.churnPercentage) || 0,
+//                 color: COLORS.age[index % COLORS.age.length]
+//             })));
+//         } catch (error) {
+//             console.error("Error fetching churn by age data:", error);
+//         }
+//     };
+
+//     // Fetch risk distribution stats
+//     const fetchRiskStats = async () => {
+//         try {
+//             const response = await axios.get("http://localhost:8080/churn-stats", {
+//                 headers: { "admin-id": localStorage.getItem("adminId") },
+//                 withCredentials: true,
+//             });
+
+//             console.log("Fetched Risk Stats:", response.data); // Debugging
+
+//             if (!response.data || typeof response.data !== 'object') {
+//                 console.error("No risk data available or incorrect format!");
+//                 setRiskStats({ high_risk: 0, medium_risk: 0, low_risk: 0 }); // Default values
+//                 return;
+//             }
+
+//             setRiskStats(response.data); // Directly set riskStats with response.data
+//         } catch (err) {
+//             setError("Error fetching risk stats");
+//             console.error("Error fetching risk stats:", err);
+//         }
+//     };
+
+//     const fetchActiveCustomers = async () => {
+//         const fetchTotalCustomers = async () => {
+//             try {
+//                 const { data } = await axios.get("http://localhost:8080/total-customers", {
+//                     headers: { "admin-id": localStorage.getItem("adminId") },
+//                     withCredentials: true,
+//                 });
+
+//                 console.log("Total Customers API Response:", data); // Debugging
+
+//                 if (data.totalCustomers !== undefined) {
+//                     setTotalCustomers(data.totalCustomers);
+//                 } else {
+//                     console.error("Total customer count missing in API response!");
+//                 }
+
+//                 if (data.activeCustomers !== undefined) {
+//                     setActiveCount(data.activeCustomers);
+//                 } else {
+//                     console.error("Active customer count missing in API response!");
+//                 }
+//             } catch (error) {
+//                 console.error("Error fetching total customers:", error);
+//             }
+//         };
+
+//         // ✅ Call the function
+//         await fetchTotalCustomers();
+//     };
+
+
+
+//     const riskData = riskStats && typeof riskStats === 'object' && Object.keys(riskStats).length > 0 ? [
+//         { name: "High Risk", value: riskStats.high_risk || 0, color: COLORS.highRisk },
+//         { name: "Medium Risk", value: riskStats.medium_risk || 0, color: COLORS.mediumRisk },
+//         { name: "Low Risk", value: riskStats.low_risk || 0, color: COLORS.lowRisk },
+//     ] : [
+//         { name: "High Risk", value: 0, color: COLORS.highRisk },
+//         { name: "Medium Risk", value: 0, color: COLORS.mediumRisk },
+//         { name: "Low Risk", value: 0, color: COLORS.lowRisk }
+//     ];
+//     const totalUsers = customers.length + activeCount;
+
+//     const pieData = [
+//         { name: "Churned", value: customers.length, color: COLORS.churned },
+//         { name: "Active", value: activeCount, color: COLORS.active },
+//     ].filter(entry => entry.value > 0); // Remove zero-value data to avoid incorrect display
+
+//     return (
+
+//         <Container className="mt-4">
+//             <h2 className="text-center mb-4">📊 Admin Dashboard - Customer Churn Analytics</h2>
+
+//             {/* Dashboard Overview */}
+//             <Row>
+//                 <Col md={12}>
+//                     <Card className="shadow mb-4">
+//                         <Card.Body>
+//                             <Card.Title>Dashboard Overview</Card.Title>
+//                             <div className="d-flex justify-content-between">
+//                                 <div>
+//                                     <h5>Total Customers: {totalCustomers}</h5>
+//                                     <h5>Churned Customers: {customers.length}</h5>
+//                                     <h5>Active Customers: {activeCount >= 0 ? activeCount : 0}</h5>
+//                                 </div>
+//                                 <div>
+//                                     <h5>High Risk Churn: {churnStats?.high_risk || "N/A"}</h5>
+//                                     <h5>Medium Risk Churn: {churnStats?.medium_risk || "N/A"}</h5>
+//                                     <h5>Low Risk Churn: {churnStats?.low_risk || "N/A"}</h5>
+//                                 </div>
+//                             </div>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+
+//             {/* Churn Analytics Charts */}
+//             <Row>
+//                 <Col md={6}>
+//                     <Card className="shadow">
+//                         <Card.Body>
+//                             <Card.Title>Customer Churn Statistics</Card.Title>
+//                             <ResponsiveContainer width="100%" height={360}>
+//                                 <PieChart>
+//                                     <Pie
+//                                         data={pieData}
+//                                         cx="50%"
+//                                         cy="50%"
+//                                         outerRadius={100}
+//                                         dataKey="value"
+//                                         label={({ name, value }) => `${name}: ${(value / totalUsers * 100).toFixed(1)}%`}
+//                                     >
+
+//                                         {pieData.map((entry, index) => (
+//                                             <Cell key={`cell-${index}`} fill={entry.color} />
+//                                         ))}
+//                                     </Pie>
+//                                     <Tooltip />
+//                                     <Legend />
+//                                 </PieChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+
+//                 <Col md={6}>
+//                     <Card className="shadow">
+//                         <Card.Body>
+//                             <Card.Title>Churn by State</Card.Title>
+//                             <ResponsiveContainer width="100%" height={360}>
+//                                 <BarChart data={churnByState}>
+//                                     <CartesianGrid strokeDasharray="3 3" />
+//                                     <XAxis dataKey="state" />
+//                                     <YAxis />
+//                                     <Tooltip />
+//                                     <Legend />
+//                                     <Bar dataKey="customer_count" fill={COLORS.state}>
+//                                         <LabelList dataKey="customer_count" position="top" />
+//                                     </Bar>
+//                                 </BarChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+
+//             <Row>
+//                 <Col md={6}>
+//                     <Card>
+//                         <Card.Body>
+//                             <Card.Title>Churn by Gender</Card.Title>
+//                             <ResponsiveContainer width="100%" height={300}>
+//                                 <PieChart>
+//                                     <Pie data={churnByGender} cx="50%" cy="50%" outerRadius={100} dataKey="customer_count" nameKey="gender">
+//                                         {churnByGender.map((entry, index) => (
+//                                             <Cell key={`cell-${index}`} fill={COLORS.gender[index % COLORS.gender.length]} />
+//                                         ))}
+//                                     </Pie>
+//                                     <Tooltip />
+//                                     <Legend />
+//                                 </PieChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+
+//                 <Col md={6}>
+//                     <Card>
+//                         <Card.Body>
+//                             <Card.Title>Churn by Age</Card.Title>
+//                             {churnByAge.length > 0 ? (
+//                                 <ResponsiveContainer width="100%" height={360}>
+//                                     <BarChart data={churnByAge}>
+//                                         <CartesianGrid strokeDasharray="3 3" />
+//                                         <XAxis dataKey="ageRange" />
+//                                         <YAxis />
+//                                         <Tooltip />
+//                                         <Legend />
+//                                         <Bar dataKey="churnPercentage" fill="#FFCE56">
+//                                             <LabelList dataKey="churnPercentage" position="top" />
+//                                         </Bar>
+//                                     </BarChart>
+//                                 </ResponsiveContainer>
+//                             ) : (
+//                                 <p>No data available</p>
+//                             )}
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+
+//             <Row>
+//                 <Col md={6}>
+//                     <Card className="shadow">
+//                         <Card.Body>
+//                             <Card.Title>Risk Distribution</Card.Title>
+//                             <ResponsiveContainer width="100%" height={300}>
+//                                 <BarChart data={riskData}>
+//                                     <XAxis dataKey="name" />
+//                                     <YAxis />
+//                                     <Tooltip />
+//                                     <Legend />
+//                                     <Bar dataKey="value">
+//                                         <LabelList dataKey="value" position="top" />
+//                                     </Bar>
+//                                 </BarChart>
+//                             </ResponsiveContainer>
+//                         </Card.Body>
+//                     </Card>
+//                 </Col>
+//             </Row>
+
+//             <h3 className="mt-4">Churned Customers</h3>
+//             <Table striped bordered hover>
+//                 <thead>
+//                     <tr>
+//                         <th>State</th>
+//                         <th>Gender</th>
+//                         <th>Age</th>
+//                     </tr>
+//                 </thead>
+//                 <tbody>
+//                     {customers.map((row, index) => (
+//                         <tr key={index}>
+//                             <td>{row.state}</td>
+//                             <td>{row.gender}</td>
+//                             <td>{row.age}</td>
+//                         </tr>
+//                     ))}
+//                 </tbody>
+//             </Table>
+//         </Container>
+
+//     );
+// };
+
+// export default AdminDashboard;
+
+
 import axios from "axios";
 import { useState, useEffect } from "react";
 import { Table, Button, Container, Spinner, Alert, Card, Row, Col } from "react-bootstrap";
@@ -1264,6 +2303,9 @@ const COLORS = {
     state: "#FFCE56",
     gender: ["#4BC0C8", "#FF9F40", "#9966CC", "#36A2EB"],
     age: ["#E0F2F7", "#B3E5FC", "#4FC3F7", "#03A9F4", "#0288D1"],
+    highRisk: "#FF0000",
+    mediumRisk: "#FF8000",
+    lowRisk: "#00FF00",
 };
 
 const AdminDashboard = () => {
@@ -1273,56 +2315,40 @@ const AdminDashboard = () => {
     const [churnByState, setChurnByState] = useState([]);
     const [churnByGender, setChurnByGender] = useState([]);
     const [churnByAge, setChurnByAge] = useState([]);
-    const [churnStats, setChurnStats] = useState(null);
+    const [riskStats, setRiskStats] = useState({ high_risk: 0, medium_risk: 0, low_risk: 0 });
+    const [churnStats, setChurnStats] = useState({ high_risk: 0, medium_risk: 0, low_risk: 0 });
     const [totalCustomers, setTotalCustomers] = useState(0);
-    const [pagination, setPagination] = useState({ page: 1, perPage: 10 });
+    const [activeCount, setActiveCount] = useState(0);
 
     const navigate = useNavigate();
-    const churnedCustomers = customers.length;
-    const activeCount = totalCustomers - churnedCustomers;
-
-    const pieData = [
-        { name: "Churned", value: churnedCustomers, color: COLORS.churned },
-        { name: "Active", value: activeCount > 0 ? activeCount : 0, color: COLORS.active }  // Ensure activeCount is always non-negative
-    ];
-
     useEffect(() => {
-        if (localStorage.getItem("isAdminAuthenticated") !== "true") {
+        if (!localStorage.getItem("isAdminAuthenticated")) {
             navigate("/admin-login");
         }
-        fetchCustomerData();
-        fetchTotalCustomers();
-    }, []);
 
-    useEffect(() => {
-        fetchChurnByAge();
-    }, []);
-
-    // Fetch churn by age data with dynamic color rendering
-    const fetchChurnByAge = async () => {
-        try {
-            const response = await axios.get("http://localhost:8080/churned-age", {
-                headers: { "admin-id": localStorage.getItem("adminId") },
-                withCredentials: true,
-            });
-
-            if (!response.data || !Array.isArray(response.data)) {
-                console.error("Invalid churn by age data:", response.data);
-                return;
+        const fetchData = async () => {
+            try {
+                setLoading(true);
+                await Promise.all([
+                    fetchCustomerData(),
+                    fetchTotalCustomers(),
+                    fetchChurnByState(),
+                    fetchChurnByGender(),
+                    fetchChurnByAge(),
+                    fetchRiskStats(),
+                    fetchActiveCustomers()
+                ]);
+            } catch (error) {
+                setError("Error fetching dashboard data.");
+            } finally {
+                setLoading(false);
             }
+        };
 
-            const formattedData = response.data.map((entry, index) => ({
-                ageRange: entry.ageRange || "Unknown",
-                churnPercentage: isNaN(parseFloat(entry.churnPercentage)) ? 0 : parseFloat(entry.churnPercentage),
-                color: COLORS.age[index % COLORS.age.length]  // Dynamic color based on index
-            }));
+        fetchData();
+    }, [navigate]);  // Add dependencies
 
-            console.log("Churn by Age Data:", formattedData);
-            setChurnByAge(formattedData);
-        } catch (error) {
-            console.error("Error fetching churn by age data:", error);
-        }
-    };
+
 
     // Fetch total customers count
     const fetchTotalCustomers = async () => {
@@ -1337,75 +2363,146 @@ const AdminDashboard = () => {
         }
     };
 
-    // Fetch customer data with churn analytics
+    // Fetch churned customers data
     const fetchCustomerData = async () => {
         setLoading(true);
-        setError(null);
         try {
-            const adminId = localStorage.getItem("adminId");
-            if (!adminId) {
-                setError("Admin ID missing. Please login.");
-                navigate("/admin-login");
-                return;
-            }
-
-            const [customersData, stateData, genderData, ageData, statsData] = await Promise.all([
-                axios.get("http://localhost:8080/churned-customers", { headers: { "admin-id": adminId }, withCredentials: true }),
-                axios.get("http://localhost:8080/churned-state", { headers: { "admin-id": adminId }, withCredentials: true }),
-                axios.get("http://localhost:8080/churned-gender", { headers: { "admin-id": adminId }, withCredentials: true }),
-                axios.get("http://localhost:8080/churned-age", { headers: { "admin-id": adminId }, withCredentials: true }),
-                axios.get("http://localhost:8080/churn-stats")
-            ]);
-
-            console.log("Churn Stats Data:", statsData.data); // Log this data to verify the structure
-            setCustomers(customersData.data);
-            setChurnByState(stateData.data);
-            setChurnByGender(genderData.data.map(g => ({ gender: g.gender, customer_count: parseInt(g.customer_count, 10) })));
-            setChurnByAge(ageData.data.map(a => ({ ageRange: a.ageRange, churnPercentage: parseFloat(a.churnPercentage) })));
-            setChurnStats(statsData.data);
+            const { data } = await axios.get("http://localhost:8080/churned-customers", {
+                headers: { "admin-id": localStorage.getItem("adminId") },
+                withCredentials: true,
+            });
+            setCustomers(data);
         } catch (error) {
-            setError("Error fetching data. Please try again later.");
+            setError("Error fetching customer data.");
         } finally {
             setLoading(false);
         }
     };
 
-    const aggregatedData = customers.reduce((acc, item) => {
-        if (!acc[item.state]) {
-            acc[item.state] = {
-                totalPurchases: 0,
-                count: 0,
-                customers: [],
-            };
+    // Fetch churn statistics by state
+    const fetchChurnByState = async () => {
+        try {
+            const { data } = await axios.get("http://localhost:8080/churned-state", {
+                headers: { "admin-id": localStorage.getItem("adminId") },
+                withCredentials: true,
+            });
+            setChurnByState(data);
+        } catch (error) {
+            console.error("Error fetching churn by state data:", error);
         }
-        acc[item.state].totalPurchases += item.total;
-        acc[item.state].count += 1;
-        acc[item.state].customers.push(item);
-
-        return acc;
-    }, {});
-
-    console.log(aggregatedData);
-
-    const highRiskCustomers = customers.filter(item => item.high_risk === 1);
-    console.log(highRiskCustomers);
-
-    // Pagination handling for churned customers
-    const handlePageChange = (newPage) => {
-        setPagination({ ...pagination, page: newPage });
     };
 
+    // Fetch churn statistics by gender
+    const fetchChurnByGender = async () => {
+        try {
+            const { data } = await axios.get("http://localhost:8080/churned-gender", {
+                headers: { "admin-id": localStorage.getItem("adminId") },
+                withCredentials: true,
+            });
+            setChurnByGender(data.map(g => ({ gender: g.gender, customer_count: parseInt(g.customer_count, 10) })));
+        } catch (error) {
+            console.error("Error fetching churn by gender data:", error);
+        }
+    };
+
+    // Fetch churn statistics by age
+    const fetchChurnByAge = async () => {
+        try {
+            const { data } = await axios.get("http://localhost:8080/churned-age", {
+                headers: { "admin-id": localStorage.getItem("adminId") },
+                withCredentials: true,
+            });
+
+            if (!Array.isArray(data)) {
+                console.error("Invalid age churn data format", data);
+                setChurnByAge([]);  // Reset to empty to prevent errors
+                return;
+            }
+
+            setChurnByAge(
+                data.map((entry, index) => ({
+                    ageRange: entry.ageRange || "Unknown",
+                    churnPercentage: parseFloat(entry.churnPercentage) || 0,
+                    color: COLORS.age[index % COLORS.age.length],
+                }))
+            );
+        } catch (error) {
+            console.error("Error fetching churn by age data:", error);
+        }
+    };
+
+
+    // Fetch risk distribution stats
+    const fetchRiskStats = async () => {
+        try {
+            const response = await axios.get("http://localhost:8080/churn-stats", {
+                headers: { "admin-id": localStorage.getItem("adminId") },
+                withCredentials: true,
+            });
+
+            console.log("Fetched Risk Stats:", response.data); // Debugging
+
+            if (!response.data || typeof response.data !== 'object') {
+                console.error("No risk data available or incorrect format!");
+                setRiskStats({ high_risk: 0, medium_risk: 0, low_risk: 0 }); // Default values
+                return;
+            }
+
+            setRiskStats(response.data); // Directly set riskStats with response.data
+        } catch (err) {
+            setError("Error fetching risk stats");
+            console.error("Error fetching risk stats:", err);
+        }
+    };
+
+    const fetchActiveCustomers = async () => {
+        try {
+            const { data } = await axios.get("http://localhost:8080/total-customers", {
+                headers: { "admin-id": localStorage.getItem("adminId") },
+                withCredentials: true,
+            });
+
+            console.log("API Response:", data); // Debugging
+
+            if (data.totalCustomers !== undefined && data.activeCustomers !== undefined) {
+                setTotalCustomers(data.totalCustomers);
+                setActiveCount(data.activeCustomers);
+            } else {
+                console.error("Invalid response format", data);
+            }
+        } catch (error) {
+            console.error("Error fetching active customers:", error);
+        }
+    };
+
+    useEffect(() => {
+        fetchActiveCustomers();
+    }, []);
+
+    const riskData = riskStats && typeof riskStats === 'object' && Object.keys(riskStats).length > 0 ? [
+        { name: "High Risk", value: riskStats.high_risk || 0, color: COLORS.highRisk },
+        { name: "Medium Risk", value: riskStats.medium_risk || 0, color: COLORS.mediumRisk },
+        { name: "Low Risk", value: riskStats.low_risk || 0, color: COLORS.lowRisk },
+    ] : [
+        { name: "High Risk", value: 0, color: COLORS.highRisk },
+        { name: "Medium Risk", value: 0, color: COLORS.mediumRisk },
+        { name: "Low Risk", value: 0, color: COLORS.lowRisk }
+    ];
+    const churnedCount = customers.length;
+
+    const pieData = [
+        { name: "Churned", value: churnedCount, color: COLORS.churned },
+        { name: "Active", value: activeCount, color: COLORS.active },
+    ].filter(entry => entry.value > 0); // Remove zero values
+    useEffect(() => {
+        fetchRiskStats();
+    }, []);
+
+
     return (
+
         <Container className="mt-4">
             <h2 className="text-center mb-4">📊 Admin Dashboard - Customer Churn Analytics</h2>
-
-            {error && <Alert variant="danger">{error}</Alert>}
-
-            <div className="d-flex justify-content-center mb-3">
-                <Button variant="primary" onClick={fetchCustomerData} disabled={loading}>
-                    {loading ? <Spinner size="sm" animation="border" /> : "Refresh Data"}
-                </Button>
-            </div>
 
             {/* Dashboard Overview */}
             <Row>
@@ -1416,7 +2513,7 @@ const AdminDashboard = () => {
                             <div className="d-flex justify-content-between">
                                 <div>
                                     <h5>Total Customers: {totalCustomers}</h5>
-                                    <h5>Churned Customers: {churnedCustomers}</h5>
+                                    <h5>Churned Customers: {customers.length}</h5>
                                     <h5>Active Customers: {activeCount >= 0 ? activeCount : 0}</h5>
                                 </div>
                                 <div>
@@ -1444,8 +2541,12 @@ const AdminDashboard = () => {
                                         cy="50%"
                                         outerRadius={100}
                                         dataKey="value"
-                                        label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                                        label={({ name, value }) =>
+                                            totalCustomers > 0 ? `${name}: ${(value / totalCustomers * 100).toFixed(1)}%` : `${name}: 0%`
+                                        }
+
                                     >
+
                                         {pieData.map((entry, index) => (
                                             <Cell key={`cell-${index}`} fill={entry.color} />
                                         ))}
@@ -1477,7 +2578,9 @@ const AdminDashboard = () => {
                         </Card.Body>
                     </Card>
                 </Col>
+            </Row>
 
+            <Row>
                 <Col md={6}>
                     <Card>
                         <Card.Body>
@@ -1520,43 +2623,65 @@ const AdminDashboard = () => {
                         </Card.Body>
                     </Card>
                 </Col>
+
             </Row>
 
-            {/* Churned Customers Table */}
-            <h3 className="mt-4">Churned Customers</h3>
-            {churnStats && churnStats.length > 0 ? (
-                <Table striped bordered hover>
-                    <thead>
-                        <tr>
-                            <th>State</th>
-                            <th>Gender</th>
-                            <th>Age</th>
-                            <th>Total Purchases</th>
-                            <th>High Risk</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {churnStats ? churnStats.map((row, index) => (
-                            <tr key={index}>
-                                <td>Delhi</td>
-                                <td>Male</td>
-                                <td>27</td>
-                                <td>43</td>
-                                <td>0</td>
-                            </tr>
-                        )) : (
-                            <tr>
-                                <td colSpan="5" className="text-center">No
-                                churn data available.</td>
-                            </tr>
-                        )}
-                    </tbody>
-                </Table>
+            <Row>
+                <Col md={6}>
+                    <Card className="shadow">
+                        <Card.Body>
+                            <Card.Title>Risk Distribution</Card.Title>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart data={riskData}>
+                                    <XAxis dataKey="name" />
+                                    <YAxis />
+                                    <Tooltip />
+                                    <Legend />
+                                    <Bar dataKey="value">
+                                        <LabelList dataKey="value" position="top" />
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </Card.Body>
+                    </Card>
+                </Col>
+            </Row>
 
-            ) : (
-                <p className="text-center">No churn data available.</p>
-            )}
+            <h3 className="mt-4">Churned Customers</h3>
+            <Table striped bordered hover responsive className="mt-3">
+    <thead className="table-dark">
+        <tr>
+            <th>#</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>State</th>
+            <th>Gender</th>
+            <th>Age</th>
+            {/* <th>Risk</th> */}
+        </tr>
+    </thead>
+    <tbody>
+        {customers.length > 0 ? (
+            customers.map((row, index) => (
+                <tr key={index}>
+                    <td>{index + 1}</td>
+                    <td>{row.user_name}</td>
+                    <td>{row.user_email}</td>
+                    <td>{row.state}</td>
+                    <td>{row.gender}</td>
+                    <td>{row.age}</td>
+                    {/* <td>{row.risk}</td> Assuming 'risk' is a property in your row object */}
+                </tr>
+            ))
+        ) : (
+            <tr>
+                <td colSpan="7" className="text-center">No churned customers found</td>
+            </tr>
+        )}
+    </tbody>
+</Table>
         </Container>
+
     );
 };
 

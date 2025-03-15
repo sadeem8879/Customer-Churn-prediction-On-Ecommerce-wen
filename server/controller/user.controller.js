@@ -1077,38 +1077,38 @@ class UserController {
   }
   static async getChurnByAge(req, res) {
     try {
-        const result = await prisma.$queryRaw`
+      const result = await prisma.$queryRaw`
             SELECT age_group AS ageRange,
-                   COUNT(*) AS customer_count,
-                   SUM(CASE WHEN total_orders = 0 OR recency_days >= 20 THEN 1 ELSE 0 END) AS churned_customers
-            FROM user_full_dataset
-            GROUP BY age_group
-            ORDER BY age_group ASC
+         COUNT(*) AS customer_count,
+         SUM(CASE WHEN total_orders = 0 OR recency_days >= 20 THEN 1 ELSE 0 END) AS churned_customers
+  FROM "user_full_dataset"
+  GROUP BY age_group
+  ORDER BY age_group ASC;
         `;
 
-        const formattedData = result.map((entry) => {
-            // Explicitly convert BigInt values to Number
-            const churnedCustomers = Number(entry.churned_customers) || 0;
-            const customerCount = Number(entry.customer_count) || 1; // Avoid division by zero
+      const formattedData = result.map((entry) => {
+        // Explicitly convert BigInt values to Number
+        const churnedCustomers = Number(entry.churned_customers) || 0;
+        const customerCount = Number(entry.customer_count) || 1; // Avoid division by zero
 
-            // Calculate churn percentage safely
-            const churnPercentage = (churnedCustomers / customerCount) * 100;
+        // Calculate churn percentage safely
+        const churnPercentage = (churnedCustomers / customerCount) * 100;
 
-            return {
-                ageRange: entry.ageRange ? entry.ageRange.trim() : "Unknown",
-                churnPercentage: !isNaN(churnPercentage) ? parseFloat(churnPercentage.toFixed(2)) : 0,
-            };
-        });
+        return {
+          ageRange: entry.ageRange ? entry.ageRange.trim() : "Unknown",
+          churnPercentage: !isNaN(churnPercentage) ? parseFloat(churnPercentage.toFixed(2)) : 0,
+        };
+      });
 
-        console.log("Formatted Churn by Age Data:", formattedData);
-        res.status(200).json(formattedData);
+      console.log("Formatted Churn by Age Data:", formattedData);
+      res.status(200).json(formattedData);
     } catch (error) {
-        console.error("Error fetching churn data by age:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error fetching churn data by age:", error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
-}
+  }
 
-  
+
 
   // 5️⃣ Predict Customer Churn using ML Model
   static async predictChurn(req, res) {
@@ -1129,27 +1129,81 @@ class UserController {
   }
   static async getTotalCustomers(req, res) {
     try {
-      const result = await prisma.$queryRaw`
-          SELECT COUNT(*) AS total
-          FROM "User"
-      `;
+        const totalResult = await prisma.$queryRaw`SELECT COUNT(*)::int AS total FROM user_full_dataset`;
+        const activeResult = await prisma.$queryRaw`
+            SELECT COUNT(*)::int AS active FROM user_full_dataset 
+            WHERE last_login_date >= NOW() - INTERVAL '7 days'
+        `;
 
-      let total = result[0].total;
+        console.log("Total Customers:", totalResult[0].total);
+        console.log("Active Customers:", activeResult[0].active);
 
-      if (typeof total === 'bigint') {
-        total = total.toString();
-      }
-
-      res.json({ total });
+        res.json({ 
+            totalCustomers: Number(totalResult[0].total),  // Convert BigInt to Number
+            activeCustomers: Number(activeResult[0].active) // Convert BigInt to Number
+        });
     } catch (error) {
-      console.error("Error fetching total customers:", error.message);
-      res.status(500).json({ error: "Internal Server Error" });
+        console.error("Error fetching total and active customers:", error);
+        res.status(500).json({ error: "Internal Server Error" });
     }
+}
 
-  }
 
-  static async getStats(req, res) {
-    try {
+//   }
+
+//   static async getStats(req, res) {
+//     try {
+//       // Check if view exists before querying
+//       const viewCheck = await prisma.$queryRaw`
+//           SELECT EXISTS (
+//               SELECT 1 FROM pg_catalog.pg_views 
+//               WHERE viewname = 'user_full_dataset'
+//           ) AS view_exists;
+//       `;
+
+//       if (!viewCheck[0].view_exists) {
+//         return res.status(500).json({ error: "View 'user_full_dataset' does not exist" });
+//       }
+
+//       // Run the main query
+//       const result = await prisma.$queryRaw`
+//       SELECT
+//     state, gender, age,
+//     COUNT(*) AS total,
+//     SUM(CASE WHEN COALESCE(total_logins, 0) < 1
+//         AND COALESCE(avg_time_per_session, 0) < 60        
+//         AND COALESCE(abandoned_cart_count, 0) > 5 THEN 1 ELSE 0 END) AS high_risk,
+//     SUM(CASE WHEN COALESCE(total_logins, 0) BETWEEN 1 AND 3
+//         AND COALESCE(avg_time_per_session, 0) BETWEEN 60 AND 300
+//         AND COALESCE(abandoned_cart_count, 0) BETWEEN 1 AND 5 THEN 1 ELSE 0 END) AS medium_risk,
+//     SUM(CASE WHEN COALESCE(total_logins, 0) > 3
+//         AND COALESCE(avg_time_per_session, 0) > 300 THEN 1 ELSE 0 END) AS low_risk
+// FROM user_full_dataset
+// GROUP BY state, gender, age;
+
+
+
+//       `;
+
+//       // Format the response
+//       const formattedResult = result.map(row => ({
+//         state: row.state,
+//         gender: row.gender,
+//         age: row.age,
+//         total: Number(row.total),
+//         high_risk: Number(row.high_risk),
+//         medium_risk: Number(row.medium_risk),
+//         low_risk: Number(row.low_risk),
+//       }));
+
+//       res.json(formattedResult);
+//     } catch (err) {
+//       console.error("❌ Error in getStats:", err);
+//       res.status(500).json({ error: err.message || "Database error" });
+//     }
+//   }
+static async getStats(req, res) {
+  try {
       // Check if view exists before querying
       const viewCheck = await prisma.$queryRaw`
           SELECT EXISTS (
@@ -1159,38 +1213,68 @@ class UserController {
       `;
 
       if (!viewCheck[0].view_exists) {
-        return res.status(500).json({ error: "View 'user_full_dataset' does not exist" });
+          return res.status(500).json({ error: "View 'user_full_dataset' does not exist" });
       }
 
-      // Run the main query
-      const result = await prisma.$queryRaw`
-         SELECT
-    state, gender, age, COUNT(*) AS total,
-    SUM(CASE WHEN (total_logins < 1 AND avg_time_per_session < 60 AND abandoned_cart_count > 5) THEN 1 ELSE 0 END) AS high_risk,
-    SUM(CASE WHEN (total_logins BETWEEN 1 AND 3 AND avg_time_per_session BETWEEN 60 AND 300 AND abandoned_cart_count BETWEEN 1 AND 5) THEN 1 ELSE 0 END) AS medium_risk,
-    SUM(CASE WHEN (total_logins > 3 AND avg_time_per_session > 300) THEN 1 ELSE 0 END) AS low_risk
-FROM user_full_dataset     
-GROUP BY state, gender, age;
+      // Calculate percentiles
+      const percentiles = await prisma.$queryRaw`
+          WITH Percentiles AS (
+              SELECT
+                  PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY COALESCE(total_logins, 0)) AS login_10,
+                  PERCENTILE_CONT(0.3) WITHIN GROUP (ORDER BY COALESCE(total_logins, 0)) AS login_30,
+                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY COALESCE(total_logins, 0)) AS login_70,
+                  PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY COALESCE(avg_time_per_session, 0)) AS session_10,
+                  PERCENTILE_CONT(0.3) WITHIN GROUP (ORDER BY COALESCE(avg_time_per_session, 0)) AS session_30,
+                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY COALESCE(avg_time_per_session, 0)) AS session_70,
+                  PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY COALESCE(abandoned_cart_count, 0)) AS cart_10,
+                  PERCENTILE_CONT(0.3) WITHIN GROUP (ORDER BY COALESCE(abandoned_cart_count, 0)) AS cart_30,
+                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY COALESCE(abandoned_cart_count, 0)) AS cart_70
+              FROM user_full_dataset
+          )
+          SELECT * FROM Percentiles;
+      `;
 
+      const { login_10, login_30, login_70, session_10, session_30, session_70, cart_10, cart_30, cart_70 } = percentiles[0];
+
+      // Modified SQL query to aggregate risk counts based on percentiles
+      const result = await prisma.$queryRaw`
+          SELECT
+              SUM(CASE
+                  WHEN COALESCE(total_logins, 0) < ${login_10}
+                      OR COALESCE(avg_time_per_session, 0) < ${session_10}
+                      OR COALESCE(abandoned_cart_count, 0) > ${cart_70}
+                  THEN 1
+                  ELSE 0
+              END) AS high_risk,
+              SUM(CASE
+                  WHEN COALESCE(total_logins, 0) BETWEEN ${login_10} AND ${login_30}
+                      OR COALESCE(avg_time_per_session, 0) BETWEEN ${session_10} AND ${session_30}
+                      OR COALESCE(abandoned_cart_count, 0) BETWEEN ${cart_30} AND ${cart_70}
+                  THEN 1
+                  ELSE 0
+              END) AS medium_risk,
+              SUM(CASE
+                  WHEN COALESCE(total_logins, 0) > ${login_70}
+                      AND COALESCE(avg_time_per_session, 0) > ${session_70}
+                  THEN 1
+                  ELSE 0
+              END) AS low_risk
+          FROM user_full_dataset;
       `;
 
       // Format the response
-      const formattedResult = result.map(row => ({
-        state: row.state,
-        gender: row.gender,
-        age: row.age,
-        total: Number(row.total),
-        high_risk: Number(row.high_risk),
-        medium_risk: Number(row.medium_risk),
-        low_risk: Number(row.low_risk),
-      }));
+      const formattedResult = {
+          high_risk: Number(result[0].high_risk),
+          medium_risk: Number(result[0].medium_risk),
+          low_risk: Number(result[0].low_risk),
+      };
 
       res.json(formattedResult);
-    } catch (err) {
+  } catch (err) {
       console.error("❌ Error in getStats:", err);
       res.status(500).json({ error: err.message || "Database error" });
-    }
   }
+}
 }
 
 
