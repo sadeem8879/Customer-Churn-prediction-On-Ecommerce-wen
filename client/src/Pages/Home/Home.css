@@ -129,3 +129,84 @@ body {
     margin-left: 15px;
     margin-top: 3px;
 }
+.about-section, .services-section, .contact-section {
+    padding: 50px 0;
+  }
+  
+  .about-image {
+    width: 100%;
+    border-radius: 10px;
+  }
+  
+  .service-card {
+    text-align: center;
+    padding: 20px;
+  }
+  
+  .service-card i {
+    font-size: 40px;
+    color: #007bff;
+  }
+  
+  .footer {
+    background: #222;
+    color: #fff;
+    padding: 20px 0;
+  }
+  
+  .footer a {
+    color: #fff;
+    text-decoration: none;
+  }
+  /* Hero Section */
+.hero-section {
+    background: linear-gradient(to right, #ff9a9e, #fad0c4);
+    padding: 50px 0;
+    color: white;
+  }
+  .shop-btn {
+    background-color: #ff4081;
+    border: none;
+  }
+  .shop-btn:hover {
+    background-color: #d81b60;
+  }
+  
+  /* About Us */
+  .about-section {
+    padding: 50px -100px;
+  }
+  .about-image {
+    width: 100%;
+    border-radius: 10px;
+  }
+  
+  /* Services */
+  .services-section {
+    background-color: #f8f9fa;
+    padding: 50px 0;
+  }
+  .service-card i {
+    font-size: 30px;
+    color: #ff4081;
+    transition: transform 0.3s ease-in-out;
+  }
+  .service-card:hover i {
+    transform: scale(1.2);
+  }
+  
+  /* Contact Form */
+  .contact-form {
+    padding: 20px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+  }
+  .submit-btn {
+    background-color: #28a745;
+    border: none;
+  }
+  .submit-btn:hover {
+    background-color: #218838;
+  }
+  

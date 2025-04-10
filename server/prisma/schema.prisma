@@ -119,11 +119,8 @@ model Order {
   updatedAt       DateTime @updatedAt
 }
 
-
-
-
 model UserLogin {
-  id        String   @id @default(uuid())  // Unique ID for each login record
+  id        Int   @id @default(autoincrement()) // Unique ID for each login record
   userId    Int
   date      DateTime @default(now())       // Stores the login date
   loginCount Int      @default(1)          // Number of logins in a day
@@ -133,7 +130,7 @@ model UserLogin {
 }
 
 model UserTimeSpent {
-  id        String   @id @default(uuid())  // Unique ID for each record
+  id        Int  @id @default(autoincrement())  // Unique ID for each record
   userId    Int
   date      DateTime @default(now())       // Stores the date
   timeSpent Int      @default(0)           // Total time spent in seconds

@@ -104,44 +104,47 @@ const Cart = () => {
                         <th>Actions</th>
                     </tr>
                 </thead>
-                <tbody className='shadow'>
-                    {cartItems.map((item, index) => {
-                        let product = null;
+              <tbody className='shadow'>
+    {cartItems.map((item, index) => {
+        console.log("Index:", index, "Item ID:", item.id); // Debugging
 
-                        switch (item.productType) {
-                            case "MenProduct": product = item.menProduct; break;
-                            case "WomenProduct": product = item.womenProduct; break;
-                            case "KidsProduct": product = item.kidsProduct; break;
-                            case "AccessoriesProduct": product = item.accessoriesProduct; break;
-                            case "CosmeticsProduct": product = item.cosmeticsProduct; break;
-                            default: console.warn("Unknown product type:", item.productType, item); return null;
-                        }
+        let product = null;
 
-                        if (!product) {
-                            console.warn("Product details NOT found for item:", item);
-                            return null;
-                        }
+        switch (item.productType) {
+            case "MenProduct": product = item.menProduct; break;
+            case "WomenProduct": product = item.womenProduct; break;
+            case "KidsProduct": product = item.kidsProduct; break;
+            case "AccessoriesProduct": product = item.accessoriesProduct; break;
+            case "CosmeticsProduct": product = item.cosmeticsProduct; break;
+            default: console.warn("Unknown product type:", item.productType, item); return null;
+        }
 
-                        const itemTotal = (product.price * item.quantity).toFixed(2); // Calculate total
+        if (!product) {
+            console.warn("Product details NOT found for item:", item);
+            return null;
+        }
 
-                        return (
-                            <tr key={item.id} className='shadow'>
-                                <td className='text-center shadow pt-'>{index + 1}</td>
-                                <td >{product.imageUrl && <img src={`http://localhost:8080${product.imageUrl}`} alt={product.name} width="120" />}</td>
-                                <td className='pt-4'>{product.name}<br />{product.description}</td>
-                                <td className='pt-4'>${product.price}</td>
-                                <td className='pt-4'>{item.productType}</td>
-                                <td className='d-flex pt-4'>
-                                    <Button className='ms-1' variant="outline-secondary" size="sm" onClick={() => handleQuantityChange(item.id, -1)} disabled={item.quantity === 1}>-</Button>{' '}
-                                    <span style={{ margin: "0 10px" }}>{item.quantity}</span>
-                                    <Button className='me-1' variant="outline-secondary" size="sm" onClick={() => handleQuantityChange(item.id, 1)}>+</Button>
-                                </td>
-                                <td className='pt-4'>${itemTotal}</td> {/* Display total */}
-                                <td className='pt-4'><Button variant="danger" size="sm" onClick={() => handleDeleteItem(item.id)}><i className="fa-solid fa-trash"></i></Button></td>
-                            </tr>
-                        );
-                    })}
-                </tbody>
+        const itemTotal = (product.price * item.quantity).toFixed(2);
+
+        return (
+            <tr key={item.id} className='shadow'>
+                <td className='text-center shadow pt-'>{index }</td> {/* Should start from 1 */}
+                <td>{product.imageUrl && <img src={`http://localhost:8080${product.imageUrl}`} alt={product.name} width="120" />}</td>
+                <td className='pt-4'>{product.name}<br />{product.description}</td>
+                <td className='pt-4'>${product.price}</td>
+                <td className='pt-4'>{item.productType}</td>
+                <td className='d-flex pt-4'>
+                    <Button className='ms-1' variant="outline-secondary" size="sm" onClick={() => handleQuantityChange(item.id, -1)} disabled={item.quantity === 1}>-</Button>{' '}
+                    <span style={{ margin: "0 10px" }}>{item.quantity}</span>
+                    <Button className='me-1' variant="outline-secondary" size="sm" onClick={() => handleQuantityChange(item.id, 1)}>+</Button>
+                </td>
+                <td className='pt-4'>${itemTotal}</td>
+                <td className='pt-4'><Button variant="danger" size="sm" onClick={() => handleDeleteItem(item.id)}><i className="fa-solid fa-trash"></i></Button></td>
+            </tr>
+        );
+    })}
+</tbody>
+
             </Table>
         </div>
     );

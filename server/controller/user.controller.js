@@ -5,11 +5,25 @@ import { userschema, loginschema, checkoutSchema } from "../schema/user.schema.j
 import "dotenv/config";
 import { z } from 'zod';
 import cron from 'node-cron';
+import nodemailer from "nodemailer";
+import { Parser } from "json2csv"
+import axios from "axios"
+// import { ML_API } from '../config/ml-endpoints';
 
+// const AXIOS_CONFIG = {
+//   timeout: 5000,
+//   headers: {
+//     'Content-Type': 'application/json',
+//     'Accept': 'application/json'
+//   }
+// };
 // import dotenv from "dotenv";
 // dotenv.config();
 
-
+// const mlAxios = axios.create({
+//   baseURL: ML_API.BASE_URL,
+//   timeout: ML_API.TIMEOUT
+// });
 class UserController {
   static async register(req, res) {
     try {
@@ -566,6 +580,42 @@ class UserController {
     }
   }
 
+  // In userController.js
+  // In userController.js
+  static async Profile(req, res) {
+    const { type, id } = req.params;
+    console.log(`API hit: /profile/${type}/${id}`); // Debugging line
+
+    try {
+      if (type === 'user') {
+        const user = await prisma.user.findUnique({
+          where: { id: parseInt(id) },
+          select: { username: true, email: true }
+        });
+
+        if (!user) return res.status(404).json({ message: 'User not found' });
+        return res.json(user);
+
+      } else if (type === 'admin') {
+        const admin = await prisma.admin.findUnique({
+          where: { id: parseInt(id) },
+          select: { username: true, email: true }
+        });
+
+        if (!admin) return res.status(404).json({ message: 'Admin not found' });
+        return res.json(admin);
+
+      } else {
+        return res.status(400).json({ message: 'Invalid type' });
+      }
+    } catch (error) {
+      console.error("Profile fetch error:", error);
+      res.status(500).json({ message: 'Server error' });
+    }
+  }
+
+
+
 
   // Example function to calculate time spent in minutes
   static async calculateTimeSpent(startTime, endTime) {
@@ -596,7 +646,45 @@ class UserController {
   //     }
   //   });
   // }
+  static async sendContactForm(req, res) {
+    const { name, email, mobile, message } = req.body;
 
+    // Validate fields
+    if (!name || !email || !mobile || !message) {
+      return res.status(400).json({ success: false, message: "All fields are required" });
+    }
+
+    try {
+      const transporter = nodemailer.createTransport({
+        service: "gmail",
+        auth: {
+          user: process.env.EMAIL_USER, // Your Gmail
+          pass: process.env.EMAIL_PASS, // Your App Password
+        },
+      });
+
+      // Email details
+      let mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: "ansarisadeem8879@gmail.com",
+        subject: "New Contact Form Submission",
+        text: `You have received a new message:
+          Name: ${name}
+          Email: ${email}
+          Mobile: ${mobile}
+          Message: ${message}`,
+      };
+
+      // Send email
+      await transporter.sendMail(mailOptions);
+
+      res.status(200).json({ success: true, message: "Email sent successfully" });
+    } catch (error) {
+      console.error("Email sending failed:", error);
+      res.status(500).json({ success: false, message: "Error sending email" });
+    }
+
+  }
   static async updateUserTimeSpent(userId) {
     console.log("Updating time spent for user:", userId);
 
@@ -636,481 +724,214 @@ class UserController {
       console.error("Error updating time spent:", error);
     }
   }
-  //   static async getChurnedCustomers(req, res) {
-  //     try {
-  //         const churnedCustomers = await prisma.$queryRaw`
-  //             SELECT user_id, user_name, user_email, age, gender, state, total_orders, total_spent, recency_days, churn_risk
-  //             FROM user_full_dataset
-  //             WHERE churn_risk IN ('High Risk', 'Medium Risk')
-  //         `;
 
-  //         // Convert BigInt values to strings
-  //         const formattedCustomers = churnedCustomers.map(customer => ({
-  //             ...customer,
-  //             user_id: customer.user_id.toString(), // Convert if it's BigInt
-  //             total_orders: customer.total_orders.toString(),
-  //             total_spent: customer.total_spent.toString(),
-  //             recency_days: customer.recency_days.toString(),
-  //         }));
-
-  //         res.status(200).json(formattedCustomers);
-  //     } catch (error) {
-  //         console.error("Error fetching churned customers:", error);
-  //         res.status(500).json({ message: "Internal Server Error" });
+  // static convertBigIntToString(obj) {
+  //   if (typeof obj === "bigint") {
+  //     return obj.toString();
+  //   } else if (Array.isArray(obj)) {
+  //     return obj.map(UserController.convertBigIntToString);
+  //   } else if (typeof obj === "object" && obj !== null) {
+  //     const newObj = {};
+  //     for (const key in obj) {
+  //       newObj[key] = UserController.convertBigIntToString(obj[key]);
   //     }
-  // }
-
-  // // Get churn count grouped by state
-  // static async getChurnByState(req, res) {
-  //     try {
-  //         const churnByState = await prisma.$queryRaw`
-  //             SELECT state, COUNT(*) AS churn_count
-  //             FROM user_full_dataset
-  //             WHERE churn_risk IN ('High Risk', 'Medium Risk')
-  //             GROUP BY state
-  //         `;
-  //         res.status(200).json(churnByState);
-  //     } catch (error) {
-  //         console.error("Error fetching churn data by state:", error);
-  //         res.status(500).json({ error: "Internal Server Error" });
-  //     }
-  // }
-
-  // // Get churn count grouped by gender
-  // static async getChurnByGender(req, res) {
-  //     try {
-  //         const churnByGender = await prisma.$queryRaw`
-  //             SELECT gender, COUNT(*) AS churn_count
-  //             FROM user_full_dataset
-  //             WHERE churn_risk IN ('High Risk', 'Medium Risk')
-  //             GROUP BY gender
-  //         `;
-  //         res.status(200).json(churnByGender);
-  //     } catch (error) {
-  //         console.error("Error fetching churn data by gender:", error);
-  //         res.status(500).json({ error: "Internal Server Error" });
-  //     }
-  // }
-
-  // // Get churn count grouped by age
-  // static async getChurnByAge(req, res) {
-  //     try {
-  //         const churnByAge = await prisma.$queryRaw`
-  //             SELECT age, COUNT(*) AS churn_count
-  //             FROM user_full_dataset
-  //             WHERE churn_risk IN ('High Risk', 'Medium Risk')
-  //             GROUP BY age
-  //             ORDER BY age
-  //         `;
-  //         res.status(200).json(churnByAge);
-  //     } catch (error) {
-  //         console.error("Error fetching churn data by age:", error);
-  //         res.status(500).json({ error: "Internal Server Error" });
-  //     }
-  // }
-
-  // // Predict customer churn using external ML model
-  // static async predictChurn(req, res) {
-  //     try {
-  //         const customerData = req.body;
-
-  //         // Basic validation
-  //         if (!customerData || Object.keys(customerData).length === 0) {
-  //             return res.status(400).json({ error: "Invalid customer data" });
-  //         }
-
-  //         const response = await axios.post("http://127.0.0.1:5000/predict-churn", customerData);
-
-  //         res.status(200).json(response.data);
-  //     } catch (error) {
-  //         console.error("Error predicting churn:", error.message);
-  //         res.status(500).json({ error: "Prediction service unavailable" });
-  //     }
-  // // }
-  // static async getChurnedCustomers(req, res) {
-  //   try {
-  //       const churnedCustomers = await prisma.$queryRaw`
-  //           SELECT user_id, user_name, user_email, age, gender, state, total_orders, total_spent, recency_days
-  //           FROM user_full_dataset
-  //           WHERE 1=1; -- Assuming you want all customers for now, or add another condition
-  //       `;
-
-  //       // Convert BigInt values to strings, handling nulls
-  //       const formattedCustomers = churnedCustomers.map(customer => ({
-  //           ...customer,
-  //           user_id: customer.user_id?.toString() || null, // Use optional chaining
-  //           total_orders: customer.total_orders?.toString() || null, // Use optional chaining
-  //           total_spent: customer.total_spent?.toString() || null, // Use optional chaining
-  //           recency_days: customer.recency_days?.toString() || null, // Use optional chaining
-  //       }));
-
-  //       res.status(200).json(formattedCustomers);
-  //   } catch (error) {
-  //       console.error("Error fetching customers:", error);
-  //       res.status(500).json({ message: "Internal Server Error" });
+  //     return newObj;
   //   }
+  //   return obj;
   // }
 
 
-  // // Get churn count grouped by state (without churn_risk)
-  // static async getChurnByState(req, res) {
-  //   try {
-  //     const result = await prisma.$queryRaw`
-  //       SELECT state, COUNT(*) AS customer_count
-  //       FROM user_full_dataset
-  //       GROUP BY state
-  //     `;
+  static convertBigIntToString(obj) {
+    if (!obj) return obj;
 
-  //     // Convert BigInt to string
-  //     const formattedResult = result.map(row => ({
-  //       state: row.state,
-  //       customer_count: row.customer_count.toString() // Convert BigInt to string
-  //     }));
+    // Handle arrays
+    if (Array.isArray(obj)) {
+      return obj.map(item => this.convertBigIntToString(item));
+    }
 
-  //     res.json(formattedResult);
-  //   } catch (error) {
-  //     console.error("Error fetching customer data by state:", error);
-  //     res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
+    // Handle objects
+    if (typeof obj === 'object' && obj !== null) {
+      const newObj = {};
+      for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          newObj[key] = this.convertBigIntToString(obj[key]);
+        }
+      }
+      return newObj;
+    }
 
-  // // Get churn count grouped by gender (without churn_risk)
-  // static async getChurnByGender(req, res) {
-  //   try {
-  //     const adminId = req.headers["admin-id"]; // Get adminId from headers
+    // Handle bigints
+    if (typeof obj === 'bigint') {
+      return obj.toString();
+    }
 
-  //     if (!adminId) {
-  //       return res.status(400).json({ error: "Admin ID is required." });
-  //     }
-
-  //     const churnByGender = await prisma.$queryRaw`
-  //       SELECT gender, COUNT(*) AS customer_count
-  //       FROM user_full_dataset
-  //       GROUP BY gender
-  //     `;
-
-  //     // Convert BigInt to string before sending
-  //     const formattedChurnByGender = churnByGender.map(row => ({
-  //       gender: row.gender,
-  //       customer_count: row.customer_count.toString() // Convert BigInt to string
-  //     }));
-
-  //     res.json(formattedChurnByGender);
-  //   } catch (error) {
-  //     console.error("Error fetching churn data by gender:", error);
-  //     res.status(500).json({ error: "Internal server error" });
-  //   }
-  // }
-
-  // static async getChurnByAge(req, res) {
-  //   try {
-  //       // Define the threshold for inactivity (e.g., 90 days)
-  //       const churnThresholdDays = 90;
-
-  //       // Get the total number of customers (using the view, but could be optimized)
-  //       const totalCustomers = await prisma.$queryRaw`SELECT COUNT(DISTINCT user_id) FROM user_full_dataset`;
-  //       // Convert BigInt to Number here
-  //       const totalCustomersCount = Number(totalCustomers[0].count);
-
-  //       const result = await prisma.$queryRaw`
-  //           SELECT 
-  //               age_group AS ageRange,
-  //               COUNT(CASE 
-  //                   WHEN last_order_date IS NULL AND last_login_date IS NULL OR
-  //                        last_order_date < NOW() - INTERVAL '${churnThresholdDays} days' AND
-  //                        last_login_date < NOW() - INTERVAL '${churnThresholdDays} days'
-  //                   THEN user_id  -- Count the user ID if churned
-  //               END) AS churned_customer_count
-  //           FROM user_full_dataset
-  //           GROUP BY age_group
-  //           ORDER BY age_group
-  //       `;
-
-  //       // Calculate churn percentage
-  //       const formattedResult = result.map((row) => {
-  //           // Convert BigInt to Number here
-  //           const churnedCount = Number(row.churned_customer_count);
-  //           return {
-  //               ageRange: row.agerange,
-  //               customer_count: churnedCount.toString(),
-  //               churnPercentage: ((churnedCount / totalCustomersCount) * 100).toFixed(2),
-  //           };
-  //       });
-
-  //       res.json(formattedResult);
-  //   } catch (error) {
-  //       console.error("Error fetching customer data by age:", error);
-  //       res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
-  // // Predict customer churn using external ML model
-  // static async predictChurn(req, res) {
-  //   try {
-  //       const customerData = req.body;
-
-  //       // Basic validation
-  //       if (!customerData || Object.keys(customerData).length === 0) {
-  //           return res.status(400).json({ error: "Invalid customer data" });
-  //       }
-
-  //       const response = await axios.post("http://127.0.0.1:5000/predict-churn", customerData);
-
-  //       res.status(200).json(response.data);
-  //   } catch (error) {
-  //       console.error("Error predicting churn:", error.message);
-  //       res.status(500).json({ error: "Prediction service unavailable" });
-  //   }
-  // }
-
-  // static async getChurnedCustomers(req, res) {
-  //   try {
-  //       const churnedCustomers = await prisma.$queryRaw`
-  //           SELECT user_id, user_name, user_email, age, gender, state, total_orders, total_spent, recency_days
-  //           FROM user_full_dataset
-  //           WHERE total_orders = 0 OR recency_days >= 90; -- Filtering churned customers
-  //       `;
-
-  //       // Convert BigInt values to strings
-  //       const formattedCustomers = churnedCustomers.map(customer => ({
-  //           ...customer,
-  //           user_id: customer.user_id?.toString() || null,
-  //           total_orders: customer.total_orders?.toString() || null,
-  //           total_spent: customer.total_spent?.toString() || null,
-  //           recency_days: customer.recency_days?.toString() || null,
-  //       }));
-
-  //       res.status(200).json(formattedCustomers);
-  //   } catch (error) {
-  //       console.error("Error fetching churned customers:", error);
-  //       res.status(500).json({ message: "Internal Server Error" });
-  //   }
-  // }
-
-  // // Get churn count grouped by state
-  // static async getChurnByState(req, res) {
-  //   try {
-  //       const result = await prisma.$queryRaw`
-  //           SELECT state, COUNT(*) AS customer_count
-  //           FROM user_full_dataset
-  //           WHERE total_orders = 0 OR recency_days >= 90 -- Filtering churned customers
-  //           GROUP BY state
-  //       `;
-
-  //       // Convert BigInt to string
-  //       const formattedResult = result.map(row => ({
-  //           state: row.state,
-  //           customer_count: row.customer_count.toString()
-  //       }));
-
-  //       res.json(formattedResult);
-  //   } catch (error) {
-  //       console.error("Error fetching churn data by state:", error);
-  //       res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
-
-  // // Get churn count grouped by gender
-  // // Get churn count grouped by gender
-  // static async getChurnByGender(req, res) {
-  //   try {
-  //       const result = await prisma.$queryRaw`
-  //           SELECT LOWER(gender) AS gender, COUNT(*) AS customer_count
-  //           FROM user_full_dataset
-  //           WHERE total_orders = 0 OR recency_days >= 90 -- Filtering churned customers
-  //           AND gender IS NOT NULL
-  //           GROUP BY LOWER(gender)
-  //       `;
-
-  //       // Convert BigInt to string
-  //       const formattedResult = result.map(row => ({
-  //           gender: row.gender.charAt(0).toUpperCase() + row.gender.slice(1), // Capitalize first letter
-  //           customer_count: row.customer_count.toString(),
-  //       }));
-
-  //       res.json(formattedResult);
-  //   } catch (error) {
-  //       console.error("Error fetching churn data by gender:", error);
-  //       res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
+    return obj;
+  }
 
 
-  // // Get churn count grouped by age range
-  // static async getChurnByAge(req, res) {
-  //   try {
-  //       const result = await prisma.$queryRaw`
-  //           SELECT age_group AS ageRange, COUNT(*) AS customer_count
-  //           FROM user_full_dataset
-  //           WHERE total_orders = 0 OR recency_days >= 90 -- Filtering churned customers
-  //           GROUP BY age_group
-  //           ORDER BY age_group
-  //       `;
+  // 1️⃣ Get Churn Trends (Using ML Model)
+  static async getChurnTrends(req, res) {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/churn-trends");
+      res.status(200).json(UserController.convertBigIntToString(response.data));
+    } catch (error) {
+      console.error("Error fetching churn trends:", error);
+      res.status(500).json({ error: error.message || "Internal Server Error" });
+    }
+  }
 
-  //       // Convert BigInt to string
-  //       const formattedResult = result.map(row => ({
-  //           ageRange: row.agerange,
-  //           customer_count: row.customer_count.toString()
-  //       }));
+  // 2️⃣ Get High-Risk Customers (Using ML Model)
+  static async getHighRiskCustomers(req, res) {
+    try {
+      // Get predictions from ML model
+      const response = await axios.get("http://127.0.0.1:5000/high-risk-customers");
 
-  //       res.json(formattedResult);
-  //   } catch (error) {
-  //       console.error("Error fetching churn data by age:", error);
-  //       res.status(500).json({ error: "Internal Server Error" });
-  //   }
-  // }
+      // The Flask endpoint should return formatted high-risk customers
+      res.status(200).json(response.data);
+    } catch (error) {
+      console.error("Error fetching high-risk customers:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
 
-  // // Predict customer churn using external ML model
-  // static async predictChurn(req, res) {
-  //   try {
-  //       const customerData = req.body;
+  // 3️⃣ Get Customer Segments (Using ML Model)
+  static async getCustomerSegments(req, res) {
+    try {
+      // Get segments from ML model
+      const response = await axios.get("http://127.0.0.1:5000/customer-segments");
 
-  //       // Basic validation
-  //       if (!customerData || Object.keys(customerData).length === 0) {
-  //           return res.status(400).json({ error: "Invalid customer data" });
-  //       }
+      res.status(200).json(response.data);
+    } catch (error) {
+      console.error("Error fetching customer segments:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
 
-  //       const response = await axios.post("http://127.0.0.1:5000/predict-churn", customerData);
+  // 4️⃣ Get Retention Rate (Using ML Model)
+  static async getRetentionRate(req, res) {
+    try {
+      // Get retention rate from ML model
+      const response = await axios.get("http://127.0.0.1:5000/retention-rate");
 
-  //       res.status(200).json(response.data);
-  //   } catch (error) {
-  //       console.error("Error predicting churn:", error.message);
-  //       res.status(500).json({ error: "Prediction service unavailable" });
-  //   }
-  // }
+      res.status(200).json(response.data);
+    } catch (error) {
+      console.error("Error calculating retention rate:", error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
+  }
 
+  // 5️⃣ Export Data (Using ML Model)
+  static async exportData(req, res) {
+    try {
+      const format = req.query.format || "json";
+
+      if (!["json", "csv"].includes(format)) {
+        return res.status(400).json({ error: "Invalid format specified" });
+      }
+
+      const response = await axios.get("http://127.0.0.1:5000/export-data", {
+        ...AXIOS_CONFIG,
+        params: { format }
+      });
+
+      if (format === "csv") {
+        res.header("Content-Type", "text/csv");
+        res.attachment("customers.csv");
+        return res.send(response.data); // Assuming Flask already returns CSV
+      }
+
+      res.status(200).json(this.convertBigIntToString(response.data));
+    } catch (error) {
+      console.error("Error exporting data:", error);
+      res.status(500).json({
+        error: error.response?.data?.error || "Internal Server Error"
+      });
+    }
+  }
+  // 6️⃣ Get Customer Details (Using ML Model)
+  static async getCustomerDetails(req, res) {
+    try {
+      const { id } = req.params;
+
+      // Validate ID
+      if (!id || !/^\d+$/.test(id)) {
+        return res.status(400).json({
+          error: "Invalid customer ID",
+          expected: "Numeric ID"
+        });
+      }
+
+      const response = await axios.get(
+        `${ML_API.BASE_URL}/customer/${id}`,
+        { timeout: 3000 }
+      );
+
+      if (!response.data) {
+        return res.status(404).json({ error: "Customer not found" });
+      }
+
+      res.status(200).json(this.convertBigIntToString(response.data));
+    } catch (error) {
+      // Handle different error cases
+      if (error.code === 'ECONNABORTED') {
+        return res.status(504).json({ error: "ML service timeout" });
+      }
+      if (error.response?.status === 404) {
+        return res.status(404).json({ error: "Customer not found in ML service" });
+      }
+
+      console.error("Customer details error:", error);
+      res.status(500).json({
+        error: "Failed to get customer details",
+        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+      });
+    }
+  }
+  // 7️⃣ Get Churned Customers (Using ML Model)
   static async getChurnedCustomers(req, res) {
     try {
-      const churnedCustomers = await prisma.$queryRaw`
-          SELECT 
-              user_id, 
-              user_name, 
-              user_email, 
-              age, 
-              gender, 
-              state, 
-              total_orders, 
-              total_spent, 
-              recency_days, 
-              total_logins, 
-              total_time_spent, 
-              avg_time_per_session, 
-              abandoned_cart_count
-          FROM user_full_dataset
-          WHERE 
-              (
-                  -- Customers with NO purchases and LOW engagement
-                  total_orders = 0
-                  AND (total_logins <= 2 OR total_time_spent <= 5 OR avg_time_per_session <= 1 OR abandoned_cart_count >= 3)
-              )
-              OR 
-              (
-                  -- Customers inactive for 90+ days with low time spent
-                  recency_days >= 90
-                  AND total_time_spent <= 10
-              )
-          ORDER BY recency_days DESC, total_orders ASC;
-      `;
-
-      // Convert BigInt values to strings (if necessary)
-      const formattedCustomers = churnedCustomers.map(customer => ({
-        ...customer,
-        user_id: customer.user_id?.toString() || null,
-        total_orders: customer.total_orders?.toString() || null,
-        total_spent: customer.total_spent?.toString() || null,
-        recency_days: customer.recency_days?.toString() || null,
-        total_logins: customer.total_logins?.toString() || null,
-        total_time_spent: customer.total_time_spent?.toString() || null,
-        avg_time_per_session: customer.avg_time_per_session?.toString() || null,
-        abandoned_cart_count: customer.abandoned_cart_count?.toString() || null
-      }));
-
-      res.status(200).json(formattedCustomers);
+      const response = await axios.get("http://127.0.0.1:5000/churned-customers");
+      res.status(200).json(response.data);
     } catch (error) {
       console.error("Error fetching churned customers:", error);
       res.status(500).json({ message: "Internal Server Error" });
     }
   }
 
-
-  // 2️⃣ Get Churn Count by State
+  // 8️⃣ Get Churn Count by State (Using ML Model)
   static async getChurnByState(req, res) {
     try {
-      const result = await prisma.$queryRaw`
-          SELECT state, COUNT(*) AS customer_count
-          FROM user_full_dataset
-          WHERE total_orders = 0 OR recency_days >= 90
-          GROUP BY state
-      `;
-
-      const formattedResult = result.map(row => ({
-        state: row.state,
-        customer_count: row.customer_count.toString()
-      }));
-
-      res.json(formattedResult);
+      const response = await axios.get("http://127.0.0.1:5000/churn-state");
+      res.json(response.data);
     } catch (error) {
       console.error("Error fetching churn data by state:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   }
 
-  // 3️⃣ Get Churn Count by Gender
+  // 9️⃣ Get Churn Count by Gender (Using ML Model)
   static async getChurnByGender(req, res) {
     try {
-      const result = await prisma.$queryRaw`
-          SELECT LOWER(gender) AS gender, COUNT(*) AS customer_count
-          FROM user_full_dataset
-          WHERE (total_orders = 0 OR recency_days >= 90) AND gender IS NOT NULL
-          GROUP BY LOWER(gender)
-      `;
-
-      const formattedResult = result.map(row => ({
-        gender: row.gender.charAt(0).toUpperCase() + row.gender.slice(1),
-        customer_count: row.customer_count.toString()
-      }));
-
-      res.json(formattedResult);
+      const response = await axios.get("http://127.0.0.1:5000/churn-gender");
+      res.json(response.data);
     } catch (error) {
       console.error("Error fetching churn data by gender:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   }
+
+  // 🔟 Get Churn by Age (Using ML Model)
   static async getChurnByAge(req, res) {
     try {
-      const result = await prisma.$queryRaw`
-            SELECT age_group AS ageRange,
-         COUNT(*) AS customer_count,
-         SUM(CASE WHEN total_orders = 0 OR recency_days >= 20 THEN 1 ELSE 0 END) AS churned_customers
-  FROM "user_full_dataset"
-  GROUP BY age_group
-  ORDER BY age_group ASC;
-        `;
-
-      const formattedData = result.map((entry) => {
-        // Explicitly convert BigInt values to Number
-        const churnedCustomers = Number(entry.churned_customers) || 0;
-        const customerCount = Number(entry.customer_count) || 1; // Avoid division by zero
-
-        // Calculate churn percentage safely
-        const churnPercentage = (churnedCustomers / customerCount) * 100;
-
-        return {
-          ageRange: entry.ageRange ? entry.ageRange.trim() : "Unknown",
-          churnPercentage: !isNaN(churnPercentage) ? parseFloat(churnPercentage.toFixed(2)) : 0,
-        };
-      });
-
-      console.log("Formatted Churn by Age Data:", formattedData);
-      res.status(200).json(formattedData);
+      const response = await axios.get("http://127.0.0.1:5000/churn-age");
+      res.status(200).json(response.data);
     } catch (error) {
       console.error("Error fetching churn data by age:", error);
       res.status(500).json({ error: "Internal Server Error" });
     }
   }
 
-
-
-  // 5️⃣ Predict Customer Churn using ML Model
+  // 1️⃣1️⃣ Predict Customer Churn using ML Model
   static async predictChurn(req, res) {
     try {
       const customerData = req.body;
@@ -1120,161 +941,34 @@ class UserController {
       }
 
       const response = await axios.post("http://127.0.0.1:5000/predict-churn", customerData);
-
       res.status(200).json(response.data);
     } catch (error) {
       console.error("Error predicting churn:", error.message);
       res.status(500).json({ error: "Prediction service unavailable" });
     }
   }
+
+  // 1️⃣2️⃣ Get Total Customers (Using ML Model)
   static async getTotalCustomers(req, res) {
     try {
-        const totalResult = await prisma.$queryRaw`SELECT COUNT(*)::int AS total FROM user_full_dataset`;
-        const activeResult = await prisma.$queryRaw`
-            SELECT COUNT(*)::int AS active FROM user_full_dataset 
-            WHERE last_login_date >= NOW() - INTERVAL '7 days'
-        `;
-
-        console.log("Total Customers:", totalResult[0].total);
-        console.log("Active Customers:", activeResult[0].active);
-
-        res.json({ 
-            totalCustomers: Number(totalResult[0].total),  // Convert BigInt to Number
-            activeCustomers: Number(activeResult[0].active) // Convert BigInt to Number
-        });
+      const response = await axios.get("http://127.0.0.1:5000/total-customers");
+      res.json(response.data);
     } catch (error) {
-        console.error("Error fetching total and active customers:", error);
-        res.status(500).json({ error: "Internal Server Error" });
+      console.error("Error fetching total and active customers:", error);
+      res.status(500).json({ error: "Internal Server Error" });
     }
-}
-
-
-//   }
-
-//   static async getStats(req, res) {
-//     try {
-//       // Check if view exists before querying
-//       const viewCheck = await prisma.$queryRaw`
-//           SELECT EXISTS (
-//               SELECT 1 FROM pg_catalog.pg_views 
-//               WHERE viewname = 'user_full_dataset'
-//           ) AS view_exists;
-//       `;
-
-//       if (!viewCheck[0].view_exists) {
-//         return res.status(500).json({ error: "View 'user_full_dataset' does not exist" });
-//       }
-
-//       // Run the main query
-//       const result = await prisma.$queryRaw`
-//       SELECT
-//     state, gender, age,
-//     COUNT(*) AS total,
-//     SUM(CASE WHEN COALESCE(total_logins, 0) < 1
-//         AND COALESCE(avg_time_per_session, 0) < 60        
-//         AND COALESCE(abandoned_cart_count, 0) > 5 THEN 1 ELSE 0 END) AS high_risk,
-//     SUM(CASE WHEN COALESCE(total_logins, 0) BETWEEN 1 AND 3
-//         AND COALESCE(avg_time_per_session, 0) BETWEEN 60 AND 300
-//         AND COALESCE(abandoned_cart_count, 0) BETWEEN 1 AND 5 THEN 1 ELSE 0 END) AS medium_risk,
-//     SUM(CASE WHEN COALESCE(total_logins, 0) > 3
-//         AND COALESCE(avg_time_per_session, 0) > 300 THEN 1 ELSE 0 END) AS low_risk
-// FROM user_full_dataset
-// GROUP BY state, gender, age;
-
-
-
-//       `;
-
-//       // Format the response
-//       const formattedResult = result.map(row => ({
-//         state: row.state,
-//         gender: row.gender,
-//         age: row.age,
-//         total: Number(row.total),
-//         high_risk: Number(row.high_risk),
-//         medium_risk: Number(row.medium_risk),
-//         low_risk: Number(row.low_risk),
-//       }));
-
-//       res.json(formattedResult);
-//     } catch (err) {
-//       console.error("❌ Error in getStats:", err);
-//       res.status(500).json({ error: err.message || "Database error" });
-//     }
-//   }
-static async getStats(req, res) {
-  try {
-      // Check if view exists before querying
-      const viewCheck = await prisma.$queryRaw`
-          SELECT EXISTS (
-              SELECT 1 FROM pg_catalog.pg_views 
-              WHERE viewname = 'user_full_dataset'
-          ) AS view_exists;
-      `;
-
-      if (!viewCheck[0].view_exists) {
-          return res.status(500).json({ error: "View 'user_full_dataset' does not exist" });
-      }
-
-      // Calculate percentiles
-      const percentiles = await prisma.$queryRaw`
-          WITH Percentiles AS (
-              SELECT
-                  PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY COALESCE(total_logins, 0)) AS login_10,
-                  PERCENTILE_CONT(0.3) WITHIN GROUP (ORDER BY COALESCE(total_logins, 0)) AS login_30,
-                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY COALESCE(total_logins, 0)) AS login_70,
-                  PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY COALESCE(avg_time_per_session, 0)) AS session_10,
-                  PERCENTILE_CONT(0.3) WITHIN GROUP (ORDER BY COALESCE(avg_time_per_session, 0)) AS session_30,
-                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY COALESCE(avg_time_per_session, 0)) AS session_70,
-                  PERCENTILE_CONT(0.1) WITHIN GROUP (ORDER BY COALESCE(abandoned_cart_count, 0)) AS cart_10,
-                  PERCENTILE_CONT(0.3) WITHIN GROUP (ORDER BY COALESCE(abandoned_cart_count, 0)) AS cart_30,
-                  PERCENTILE_CONT(0.7) WITHIN GROUP (ORDER BY COALESCE(abandoned_cart_count, 0)) AS cart_70
-              FROM user_full_dataset
-          )
-          SELECT * FROM Percentiles;
-      `;
-
-      const { login_10, login_30, login_70, session_10, session_30, session_70, cart_10, cart_30, cart_70 } = percentiles[0];
-
-      // Modified SQL query to aggregate risk counts based on percentiles
-      const result = await prisma.$queryRaw`
-          SELECT
-              SUM(CASE
-                  WHEN COALESCE(total_logins, 0) < ${login_10}
-                      OR COALESCE(avg_time_per_session, 0) < ${session_10}
-                      OR COALESCE(abandoned_cart_count, 0) > ${cart_70}
-                  THEN 1
-                  ELSE 0
-              END) AS high_risk,
-              SUM(CASE
-                  WHEN COALESCE(total_logins, 0) BETWEEN ${login_10} AND ${login_30}
-                      OR COALESCE(avg_time_per_session, 0) BETWEEN ${session_10} AND ${session_30}
-                      OR COALESCE(abandoned_cart_count, 0) BETWEEN ${cart_30} AND ${cart_70}
-                  THEN 1
-                  ELSE 0
-              END) AS medium_risk,
-              SUM(CASE
-                  WHEN COALESCE(total_logins, 0) > ${login_70}
-                      AND COALESCE(avg_time_per_session, 0) > ${session_70}
-                  THEN 1
-                  ELSE 0
-              END) AS low_risk
-          FROM user_full_dataset;
-      `;
-
-      // Format the response
-      const formattedResult = {
-          high_risk: Number(result[0].high_risk),
-          medium_risk: Number(result[0].medium_risk),
-          low_risk: Number(result[0].low_risk),
-      };
-
-      res.json(formattedResult);
-  } catch (err) {
-      console.error("❌ Error in getStats:", err);
-      res.status(500).json({ error: err.message || "Database error" });
   }
-}
+
+  // 1️⃣3️⃣ Get Stats (Using ML Model)
+  static async getStats(req, res) {
+    try {
+      const response = await axios.get("http://127.0.0.1:5000/churn-stats");
+      res.json(response.data);
+    } catch (err) {
+      console.error("❌ Error in getStats:", err);
+      res.status(500).json({ error: err.message || "Internal Server Error" });
+    }
+  }
 }
 
 

@@ -1,0 +1,145 @@
+/* Footer Base */
+.footer {
+    background-color: #000; /* Black Background */
+    color: #fff; /* White Text */
+    padding: 40px 0;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  /* Footer Brand */
+  .footer-brand h5 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff4081;
+  }
+  .footer-brand p {
+    font-size: 14px;
+    opacity: 0.8;
+  }
+  
+  /* Quick Links */
+  .footer-links h5 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #f8b400;
+  }
+  .footer-links ul {
+    padding: 0;
+    list-style: none;
+  }
+  .footer-links ul li {
+    margin: 8px 0;
+  }
+  .footer-links ul li a {
+    color: #ddd;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+  }
+  .footer-links ul li a:hover {
+    color: #ff4081; /* Pink Hover */
+  }
+  
+  /* Social Media Icons */
+  .footer-social h5 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1dbf73;
+  }
+  .footer-social a {
+    color: #fff;
+    font-size: 20px;
+    margin-right: 15px;
+    transition: transform 0.3s ease-in-out, color 0.3s ease;
+  }
+  .footer-social a:hover {
+    color: #ff4081;
+    transform: scale(1.2);
+  }
+  
+  /* Divider */
+  .footer-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 20px 0;
+  }
+  
+  /* Copyright */
+  .footer-copy {
+    font-size: 14px;
+    opacity: 0.7;
+  }
+  /* Footer Base */
+.footer {
+    background-color: #000; /* Black Background */
+    color: #fff; /* White Text */
+    padding: 40px 0;
+    font-family: 'Poppins', sans-serif;
+  }
+  
+  /* Footer Brand */
+  .footer-brand h5 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #ff4081;
+  }
+  .footer-brand p {
+    font-size: 14px;
+    opacity: 0.8;
+  }
+  
+  /* Quick Links */
+  .footer-links h5 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #f8b400;
+  }
+  .footer-links ul {
+    padding: 0;
+    list-style: none;
+  }
+  .footer-links ul li {
+    margin: 8px 0;
+  }
+  .footer-links ul li a {
+    color: #ddd;
+    text-decoration: none;
+    font-size: 14px;
+    transition: color 0.3s ease;
+  }
+  .footer-links ul li a:hover {
+    color: #ff4081; /* Pink Hover */
+  }
+  
+  /* Social Media Icons */
+  .footer-social h5 {
+    font-size: 18px;
+    font-weight: bold;
+    color: #1dbf73;
+  }
+  .social-icons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+  }
+  .social-icons a {
+    color: #fff;
+    font-size: 20px;
+    transition: transform 0.3s ease-in-out, color 0.3s ease;
+  }
+  .social-icons a:hover {
+    color: #ff4081;
+    transform: scale(1.2);
+  }
+  
+  /* Divider */
+  .footer-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin: 20px 0;
+  }
+  
+  /* Copyright */
+  .footer-copy {
+    font-size: 14px;
+    opacity: 0.7;
+  }
+  

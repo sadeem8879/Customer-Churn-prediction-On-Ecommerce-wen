@@ -660,7 +660,7 @@ const Register = () => {
             setMessage(response.data.msg);
 
             if (response.data.success) {
-                navigate('/home');
+                navigate('/login');
             }
         } catch (error) {
             console.error('Error:', error);

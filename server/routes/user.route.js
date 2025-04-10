@@ -29,12 +29,21 @@ userRoute.post("/buynow", userController.buynow);
 // userRoute.put("/cart/:id", userController.getChurnedCustomers);
 // userRoute.get("/churn-data", authenticateToken, adminAuth, userController.getChurnedCustomers);
 userRoute.get("/churned-customers", adminAuth, userController.getChurnedCustomers);
-userRoute.get("/churned-state",adminAuth, userController.getChurnByState);
-userRoute.get("/churned-age",adminAuth, userController.getChurnByAge);
-userRoute.get("/churned-gender",adminAuth, userController.getChurnByGender);
+userRoute.get("/churn-state",adminAuth, userController.getChurnByState);
+userRoute.get("/churn-age",adminAuth, userController.getChurnByAge);
+userRoute.get("/churn-gender",adminAuth, userController.getChurnByGender);
 userRoute.post("/predict-churn",  userController.predictChurn);
 userRoute.get("/total-customers", adminAuth, userController.getTotalCustomers);
-userRoute.get("/churn-stats",  userController.getStats);
+userRoute.get("/churn-stats",adminAuth,  userController.getStats);
+userRoute.get("/churn-trends",adminAuth,  userController.getChurnTrends);
+userRoute.get("/customer/:id",adminAuth,  userController.getCustomerDetails);
+userRoute.get("/high-risk-customers", adminAuth, userController.getHighRiskCustomers);
+userRoute.get("/customer-segments", adminAuth, userController.getCustomerSegments);
+userRoute.get("/retention-rate",adminAuth,  userController.getRetentionRate);
+userRoute.get("/export",  adminAuth,userController.exportData);
+userRoute.get("/profile/:type/:id",  userController.Profile);
+
+userRoute.post("/contact", userController.sendContactForm);
 
 // Add route to fetch real-time churn predictions
 // userRoute.post("/predict-churn", userController.predictChurn);

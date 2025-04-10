@@ -19,6 +19,7 @@ import { CartProvider } from './Context/CartContext';  // Import CartProvider
 import OrderSuccess from "./Component/OrderSuccess/OrderSuccess";
 import useTimeTracking from "./Component/UserTrack/UserTrack";  // Importing your custom hook
 import Admin from './Component/Admin/Admin';
+import Footer from "./Component/Footer/Footer"
 import AdminLogin from "./Component/Adminlogin/Adminlogin"
 function App() {
   const [userId, setUserId] = useState(localStorage.getItem('userId') || null);
@@ -107,7 +108,7 @@ function App() {
           <Route path="/" element={<Register />} />
           <Route path="/login" element={<Login handleLogin={handleLogin} />} />
           <Route path="/profile" element={<Profile />} />
-          <Route path="/home" element={<Home />} />
+          <Route path="/home" element={<Home/>} />
           <Route path="/mens" element={<Mens />} />
           <Route path="/womens" element={<Womens />} />
           <Route path="/kids" element={<Kids />} />
@@ -122,6 +123,8 @@ function App() {
           <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
 
         </Routes>
+    <Footer/>
+
       </BrowserRouter>
     </CartProvider>
   );
