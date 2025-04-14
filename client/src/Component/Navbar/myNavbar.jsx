@@ -149,7 +149,7 @@ const MyNavbar = ({ handleLogout }) => {
             ) : (
               <>
                 <Nav.Link as={Link} to="/login" className="custom-button">Login</Nav.Link>
-                <Nav.Link as={Link} to="/register" className="custom-button">Register</Nav.Link>
+                <Nav.Link as={Link} to="/" className="custom-button">Register</Nav.Link>
               </>
 
             )}

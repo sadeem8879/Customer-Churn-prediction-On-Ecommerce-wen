@@ -69,12 +69,13 @@ const PORT = 8080;
 
 app.use(
     cors({
-    origin: "http://localhost:5173",
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: "Content-Type, Authorization, admin-id" // Allow admin-id header
-})
-);
+      origin: "http://localhost:5173",
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // Add OPTIONS
+      allowedHeaders: ["Content-Type", "Authorization", "admin-id"] // Array format
+    })
+  );
+  app.options('*', cors());
 
 // app.use((req, res, next) => {
 //     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);

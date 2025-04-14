@@ -582,29 +582,60 @@ class UserController {
 
   // In userController.js
   // In userController.js
+  // static async Profile(req, res) {
+  //   const { type, id } = req.params;
+  //   console.log(`API hit: /profile/${type}/${id}`); // Debugging line
+
+  //   try {
+  //     if (type === 'user') {
+  //       const user = await prisma.user.findUnique({
+  //         where: { id: parseInt(id) },
+  //         select: { username: true, email: true }
+  //       });
+
+  //       if (!user) return res.status(404).json({ message: 'User not found' });
+  //       return res.json(user);
+
+  //     } else if (type === 'admin') {
+  //       const admin = await prisma.admin.findUnique({
+  //         where: { id: parseInt(id) },
+  //         select: { username: true, email: true }
+  //       });
+
+  //       if (!admin) return res.status(404).json({ message: 'Admin not found' });
+  //       return res.json(admin);
+
+  //     } else {
+  //       return res.status(400).json({ message: 'Invalid type' });
+  //     }
+  //   } catch (error) {
+  //     console.error("Profile fetch error:", error);
+  //     res.status(500).json({ message: 'Server error' });
+  //   }
+  // }
   static async Profile(req, res) {
     const { type, id } = req.params;
     console.log(`API hit: /profile/${type}/${id}`); // Debugging line
-
+  
     try {
       if (type === 'user') {
         const user = await prisma.user.findUnique({
-          where: { id: parseInt(id) },
+          where: { id: parseInt(id) }, // Users have numeric IDs
           select: { username: true, email: true }
         });
-
+  
         if (!user) return res.status(404).json({ message: 'User not found' });
         return res.json(user);
-
+  
       } else if (type === 'admin') {
         const admin = await prisma.admin.findUnique({
-          where: { id: parseInt(id) },
+          where: { id: id.toString() }, // ✅ Fix: Use string, not parseInt
           select: { username: true, email: true }
         });
-
+  
         if (!admin) return res.status(404).json({ message: 'Admin not found' });
         return res.json(admin);
-
+  
       } else {
         return res.status(400).json({ message: 'Invalid type' });
       }
@@ -613,7 +644,7 @@ class UserController {
       res.status(500).json({ message: 'Server error' });
     }
   }
-
+  
 
 
 
@@ -741,233 +772,460 @@ class UserController {
   // }
 
 
+  // static convertBigIntToString(obj) {
+  //   if (!obj) return obj;
+
+  //   // Handle arrays
+  //   if (Array.isArray(obj)) {
+  //     return obj.map(item => this.convertBigIntToString(item));
+  //   }
+
+  //   // Handle objects
+  //   if (typeof obj === 'object' && obj !== null) {
+  //     const newObj = {};
+  //     for (const key in obj) {
+  //       if (obj.hasOwnProperty(key)) {
+  //         newObj[key] = this.convertBigIntToString(obj[key]);
+  //       }
+  //     }
+  //     return newObj;
+  //   }
+
+  //   // Handle bigints
+  //   if (typeof obj === 'bigint') {
+  //     return obj.toString();
+  //   }
+
+  //   return obj;
+  // }
+
+
+  // // 1️⃣ Get Churn Trends (Using ML Model)
+  // static async getChurnTrends(req, res) {
+  //   try {
+  //     const response = await axios.get("http://127.0.0.1:5000/churn-trends");
+  //     res.status(200).json(UserController.convertBigIntToString(response.data));
+  //   } catch (error) {
+  //     console.error("Error fetching churn trends:", error);
+  //     res.status(500).json({ error: error.message || "Internal Server Error" });
+  //   }
+  // }
+
+  // // 2️⃣ Get High-Risk Customers (Using ML Model)
+  // static async getHighRiskCustomers(req, res) {
+  //   try {
+  //     // Get predictions from ML model
+  //     const response = await axios.get("http://127.0.0.1:5000/high-risk-customers");
+
+  //     // The Flask endpoint should return formatted high-risk customers
+  //     res.status(200).json(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching high-risk customers:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // }
+
+  // // 3️⃣ Get Customer Segments (Using ML Model)
+  // static async getCustomerSegments(req, res) {
+  //   try {
+  //     // Get segments from ML model
+  //     const response = await axios.get("http://127.0.0.1:5000/customer-segments");
+
+  //     res.status(200).json(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching customer segments:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // }
+
+  // // 4️⃣ Get Retention Rate (Using ML Model)
+  // static async getRetentionRate(req, res) {
+  //   try {
+  //     // Get retention rate from ML model
+  //     const response = await axios.get("http://127.0.0.1:5000/retention-rate");
+
+  //     res.status(200).json(response.data);
+  //   } catch (error) {
+  //     console.error("Error calculating retention rate:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // }
+
+  // // 5️⃣ Export Data (Using ML Model)
+  // static async exportData(req, res) {
+  //   try {
+  //     const format = req.query.format || "json";
+
+  //     if (!["json", "csv"].includes(format)) {
+  //       return res.status(400).json({ error: "Invalid format specified" });
+  //     }
+
+  //     const response = await axios.get("http://127.0.0.1:5000/export-data", {
+  //       ...AXIOS_CONFIG,
+  //       params: { format }
+  //     });
+
+  //     if (format === "csv") {
+  //       res.header("Content-Type", "text/csv");
+  //       res.attachment("customers.csv");
+  //       return res.send(response.data); // Assuming Flask already returns CSV
+  //     }
+
+  //     res.status(200).json(this.convertBigIntToString(response.data));
+  //   } catch (error) {
+  //     console.error("Error exporting data:", error);
+  //     res.status(500).json({
+  //       error: error.response?.data?.error || "Internal Server Error"
+  //     });
+  //   }
+  // }
+  // // 6️⃣ Get Customer Details (Using ML Model)
+  // static async getCustomerDetails(req, res) {
+  //   try {
+  //     const { id } = req.params;
+
+  //     // Validate ID
+  //     if (!id || !/^\d+$/.test(id)) {
+  //       return res.status(400).json({
+  //         error: "Invalid customer ID",
+  //         expected: "Numeric ID"
+  //       });
+  //     }
+
+  //     const response = await axios.get(
+  //       `${ML_API.BASE_URL}/customer/${id}`,
+  //       { timeout: 3000 }
+  //     );
+
+  //     if (!response.data) {
+  //       return res.status(404).json({ error: "Customer not found" });
+  //     }
+
+  //     res.status(200).json(this.convertBigIntToString(response.data));
+  //   } catch (error) {
+  //     // Handle different error cases
+  //     if (error.code === 'ECONNABORTED') {
+  //       return res.status(504).json({ error: "ML service timeout" });
+  //     }
+  //     if (error.response?.status === 404) {
+  //       return res.status(404).json({ error: "Customer not found in ML service" });
+  //     }
+
+  //     console.error("Customer details error:", error);
+  //     res.status(500).json({
+  //       error: "Failed to get customer details",
+  //       ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
+  //     });
+  //   }
+  // }
+  // // 7️⃣ Get Churned Customers (Using ML Model)
+  // static async getChurnedCustomers(req, res) {
+  //   try {
+  //     const response = await axios.get("http://127.0.0.1:5000/churned-customers");
+  //     res.status(200).json(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching churned customers:", error);
+  //     res.status(500).json({ message: "Internal Server Error" });
+  //   }
+  // }
+
+  // static async getChurnedUSer(req, res) {
+  //   try {
+  //     const response = await axios.get("http://127.0.0.1:5000/churn-explanation/${id}");
+  //     res.status(200).json(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching churned customers:", error);
+  //     res.status(500).json({ message: "Internal Server Error" });
+  //   }
+  // }
+
+
+  // // 8️⃣ Get Churn Count by State (Using ML Model)
+  // static async getChurnByState(req, res) {
+  //   try {
+  //     const response = await axios.get("http://127.0.0.1:5000/churn-state");
+  //     res.json(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching churn data by state:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // }
+
+  // // 9️⃣ Get Churn Count by Gender (Using ML Model)
+  // static async getChurnByGender(req, res) {
+  //   try {
+  //     const response = await axios.get("http://127.0.0.1:5000/churn-gender");
+  //     res.json(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching churn data by gender:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // }
+
+  // // 🔟 Get Churn by Age (Using ML Model)
+  // static async getChurnByAge(req, res) {
+  //   try {
+  //     const response = await axios.get("http://127.0.0.1:5000/churn-age");
+  //     res.json(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching churn data by age:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // }
+
+  // // 1️⃣1️⃣ Predict Customer Churn using ML Model
+  // static async predictChurn(req, res) {
+  //   try {
+  //     const customerData = req.body;
+
+  //     if (!customerData || Object.keys(customerData).length === 0) {
+  //       return res.status(400).json({ error: "Invalid customer data" });
+  //     }
+
+  //     const response = await axios.post("http://127.0.0.1:5000/predict-churn", customerData);
+  //     res.status(200).json(response.data);
+  //   } catch (error) {
+  //     console.error("Error predicting churn:", error.message);
+  //     res.status(500).json({ error: "Prediction service unavailable" });
+  //   }
+  // }
+
+  // // 1️⃣2️⃣ Get Total Customers (Using ML Model)
+  // static async getTotalCustomers(req, res) {
+  //   try {
+  //     const response = await axios.get("http://127.0.0.1:5000/total-customers");
+  //     res.json(response.data);
+  //   } catch (error) {
+  //     console.error("Error fetching total and active customers:", error);
+  //     res.status(500).json({ error: "Internal Server Error" });
+  //   }
+  // }
+
+  // // 1️⃣3️⃣ Get Stats (Using ML Model)
+  // static async getStats(req, res) {
+  //   try {
+  //     const response = await axios.get("http://127.0.0.1:5000/churn-stats");
+  //     res.json(response.data);
+  //   } catch (err) {
+  //     console.error("❌ Error in getStats:", err);
+  //     res.status(500).json({ error: err.message || "Internal Server Error" });
+  //   }
+  // }
   static convertBigIntToString(obj) {
     if (!obj) return obj;
-
-    // Handle arrays
-    if (Array.isArray(obj)) {
-      return obj.map(item => this.convertBigIntToString(item));
+    if (Array.isArray(obj)) return obj.map(item => this.convertBigIntToString(item));
+    if (typeof obj === 'object') {
+      return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, this.convertBigIntToString(v)]));
     }
+    return typeof obj === 'bigint' ? obj.toString() : obj;
+  }
 
-    // Handle objects
-    if (typeof obj === 'object' && obj !== null) {
-      const newObj = {};
-      for (const key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          newObj[key] = this.convertBigIntToString(obj[key]);
+  static ML_API_CONFIG = {
+    BASE_URL: "http://127.0.0.1:5000",
+    TIMEOUT: 60000, // increased to 60 seconds
+    RETRIES: 3,
+    RETRY_DELAY: 2000
+  };
+
+
+  static mlApi = axios.create({
+    baseURL: UserController.ML_API_CONFIG.BASE_URL,
+    timeout: UserController.ML_API_CONFIG.TIMEOUT,
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache'
+    }
+  });
+
+  static async callWithRetry(endpoint, options = {}) {
+    let lastError;
+    for (let attempt = 1; attempt <= UserController.ML_API_CONFIG.RETRIES; attempt++) {
+      try {
+        const response = await UserController.mlApi({ url: endpoint, ...options });
+        return response.data;
+      } catch (error) {
+        lastError = error;
+        console.warn(`Attempt ${attempt} failed for ${endpoint}:`, error.message);
+        if (attempt < UserController.ML_API_CONFIG.RETRIES) {
+          await new Promise(res => setTimeout(res, UserController.ML_API_CONFIG.RETRY_DELAY * attempt));
         }
       }
-      return newObj;
     }
-
-    // Handle bigints
-    if (typeof obj === 'bigint') {
-      return obj.toString();
-    }
-
-    return obj;
+    throw lastError || new Error(`Failed to call ${endpoint} after ${UserController.ML_API_CONFIG.RETRIES} attempts`);
   }
 
-
-  // 1️⃣ Get Churn Trends (Using ML Model)
   static async getChurnTrends(req, res) {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/churn-trends");
-      res.status(200).json(UserController.convertBigIntToString(response.data));
+      const data = await UserController.callWithRetry('/churn-trends');
+      res.status(200).json(UserController.convertBigIntToString(data));
     } catch (error) {
-      console.error("Error fetching churn trends:", error);
-      res.status(500).json({ error: error.message || "Internal Server Error" });
+      UserController.handleErrorResponse(res, error, "Failed to get churn trends");
     }
   }
 
-  // 2️⃣ Get High-Risk Customers (Using ML Model)
   static async getHighRiskCustomers(req, res) {
     try {
-      // Get predictions from ML model
-      const response = await axios.get("http://127.0.0.1:5000/high-risk-customers");
-
-      // The Flask endpoint should return formatted high-risk customers
-      res.status(200).json(response.data);
+      const data = await UserController.callWithRetry('/high-risk-customers');
+      res.status(200).json({
+        count: data.customers.length,
+        customers: UserController.convertBigIntToString(data.customers),
+        timestamp: new Date().toISOString()
+      });
     } catch (error) {
-      console.error("Error fetching high-risk customers:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      UserController.handleErrorResponse(res, error, "Failed to get high-risk customers");
     }
   }
 
-  // 3️⃣ Get Customer Segments (Using ML Model)
   static async getCustomerSegments(req, res) {
     try {
-      // Get segments from ML model
-      const response = await axios.get("http://127.0.0.1:5000/customer-segments");
-
-      res.status(200).json(response.data);
+      const data = await UserController.callWithRetry('/customer-segments');
+      res.status(200).json(UserController.convertBigIntToString(data));
     } catch (error) {
-      console.error("Error fetching customer segments:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      UserController.handleErrorResponse(res, error, "Failed to get customer segments");
     }
   }
 
-  // 4️⃣ Get Retention Rate (Using ML Model)
   static async getRetentionRate(req, res) {
     try {
-      // Get retention rate from ML model
-      const response = await axios.get("http://127.0.0.1:5000/retention-rate");
+      const data = await UserController.callWithRetry('/retention-rate');
 
-      res.status(200).json(response.data);
+      const processed = {
+        retentionRate: parseFloat(data.retention_rate),
+        churnRate: parseFloat(data.churn_rate),
+        activeCustomers: data.active_customers,
+        inactiveCustomers: data.inactive_customers,
+        atRiskCustomers: data.at_risk_customers,
+        newCustomers: data.new_customers,
+        totalCustomers: data.total_customers,
+        timestamp: data.timestamp
+      };
+
+      res.status(200).json(processed);
     } catch (error) {
-      console.error("Error calculating retention rate:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      UserController.handleErrorResponse(res, error, "Failed to calculate retention rate");
     }
   }
 
-  // 5️⃣ Export Data (Using ML Model)
+
   static async exportData(req, res) {
     try {
       const format = req.query.format || "json";
-
       if (!["json", "csv"].includes(format)) {
-        return res.status(400).json({ error: "Invalid format specified" });
+        return res.status(400).json({ error: "Invalid format", allowedFormats: ["json", "csv"] });
       }
-
-      const response = await axios.get("http://127.0.0.1:5000/export-data", {
-        ...AXIOS_CONFIG,
-        params: { format }
+      const data = await UserController.callWithRetry('/export-data', {
+        params: { format },
+        responseType: format === "csv" ? "stream" : "json"
       });
-
       if (format === "csv") {
         res.header("Content-Type", "text/csv");
-        res.attachment("customers.csv");
-        return res.send(response.data); // Assuming Flask already returns CSV
+        res.attachment("customer_churn_export.csv");
+        return data.pipe(res);
       }
-
-      res.status(200).json(this.convertBigIntToString(response.data));
+      res.status(200).json(UserController.convertBigIntToString(data));
     } catch (error) {
-      console.error("Error exporting data:", error);
-      res.status(500).json({
-        error: error.response?.data?.error || "Internal Server Error"
-      });
+      UserController.handleErrorResponse(res, error, "Export failed");
     }
   }
-  // 6️⃣ Get Customer Details (Using ML Model)
+
   static async getCustomerDetails(req, res) {
     try {
       const { id } = req.params;
-
-      // Validate ID
-      if (!id || !/^\d+$/.test(id)) {
-        return res.status(400).json({
-          error: "Invalid customer ID",
-          expected: "Numeric ID"
-        });
-      }
-
-      const response = await axios.get(
-        `${ML_API.BASE_URL}/customer/${id}`,
-        { timeout: 3000 }
-      );
-
-      if (!response.data) {
-        return res.status(404).json({ error: "Customer not found" });
-      }
-
-      res.status(200).json(this.convertBigIntToString(response.data));
+      const data = await UserController.callWithRetry(`/customer/${id}`);
+      res.status(200).json(UserController.convertBigIntToString(data));
     } catch (error) {
-      // Handle different error cases
-      if (error.code === 'ECONNABORTED') {
-        return res.status(504).json({ error: "ML service timeout" });
-      }
-      if (error.response?.status === 404) {
-        return res.status(404).json({ error: "Customer not found in ML service" });
-      }
-
-      console.error("Customer details error:", error);
-      res.status(500).json({
-        error: "Failed to get customer details",
-        ...(process.env.NODE_ENV === 'development' && { stack: error.stack })
-      });
+      UserController.handleErrorResponse(res, error, "Failed to get customer details");
     }
   }
-  // 7️⃣ Get Churned Customers (Using ML Model)
+
   static async getChurnedCustomers(req, res) {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/churned-customers");
-      res.status(200).json(response.data);
+      const data = await UserController.callWithRetry('/churned-customers');
+      res.status(200).json({
+        count: data.customers.length,
+        customers: UserController.convertBigIntToString(data.customers),
+        timestamp: new Date().toISOString()
+      });
     } catch (error) {
-      console.error("Error fetching churned customers:", error);
-      res.status(500).json({ message: "Internal Server Error" });
+      UserController.handleErrorResponse(res, error, "Failed to get churned customers");
     }
   }
 
-  // 8️⃣ Get Churn Count by State (Using ML Model)
+  static async getChurnedUser(req, res) {
+    try {
+      const { id } = req.params;
+      const data = await UserController.callWithRetry(`/churn-explanation/${id}`);
+      res.status(200).json(UserController.convertBigIntToString(data));
+    } catch (error) {
+      UserController.handleErrorResponse(res, error, "Failed to get churn explanation");
+    }
+  }
+
   static async getChurnByState(req, res) {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/churn-state");
-      res.json(response.data);
+      const data = await UserController.callWithRetry('/churn-state');
+      res.json(UserController.convertBigIntToString(data));
     } catch (error) {
-      console.error("Error fetching churn data by state:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      UserController.handleErrorResponse(res, error, "Failed to get churn by state");
     }
   }
 
-  // 9️⃣ Get Churn Count by Gender (Using ML Model)
   static async getChurnByGender(req, res) {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/churn-gender");
-      res.json(response.data);
+      const data = await UserController.callWithRetry('/churn-gender');
+      res.status(200).json(UserController.convertBigIntToString(data));
     } catch (error) {
-      console.error("Error fetching churn data by gender:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      UserController.handleErrorResponse(res, error, "Failed to get churn by gender");
     }
   }
 
-  // 🔟 Get Churn by Age (Using ML Model)
   static async getChurnByAge(req, res) {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/churn-age");
-      res.status(200).json(response.data);
+      const data = await UserController.callWithRetry('/churn-age');
+      const processed = typeof data === 'string' ? JSON.parse(data) : data;
+      res.status(200).json(UserController.convertBigIntToString(processed));
     } catch (error) {
-      console.error("Error fetching churn data by age:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      UserController.handleErrorResponse(res, error, "Failed to get age churn data");
     }
   }
 
-  // 1️⃣1️⃣ Predict Customer Churn using ML Model
   static async predictChurn(req, res) {
     try {
       const customerData = req.body;
-
-      if (!customerData || Object.keys(customerData).length === 0) {
-        return res.status(400).json({ error: "Invalid customer data" });
-      }
-
-      const response = await axios.post("http://127.0.0.1:5000/predict-churn", customerData);
-      res.status(200).json(response.data);
+      const data = await UserController.callWithRetry('/predict-churn', {
+        method: 'post',
+        data: customerData
+      });
+      res.status(200).json(UserController.convertBigIntToString(data));
     } catch (error) {
-      console.error("Error predicting churn:", error.message);
-      res.status(500).json({ error: "Prediction service unavailable" });
+      UserController.handleErrorResponse(res, error, "Prediction failed");
     }
   }
 
-  // 1️⃣2️⃣ Get Total Customers (Using ML Model)
   static async getTotalCustomers(req, res) {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/total-customers");
-      res.json(response.data);
+      const data = await UserController.callWithRetry('/total-customers');
+      res.status(200).json(UserController.convertBigIntToString(data));
     } catch (error) {
-      console.error("Error fetching total and active customers:", error);
-      res.status(500).json({ error: "Internal Server Error" });
+      UserController.handleErrorResponse(res, error, "Failed to get customer count");
     }
   }
 
-  // 1️⃣3️⃣ Get Stats (Using ML Model)
   static async getStats(req, res) {
     try {
-      const response = await axios.get("http://127.0.0.1:5000/churn-stats");
-      res.json(response.data);
-    } catch (err) {
-      console.error("❌ Error in getStats:", err);
-      res.status(500).json({ error: err.message || "Internal Server Error" });
+      const data = await UserController.callWithRetry('/churn-stats');
+      res.status(200).json(UserController.convertBigIntToString(data));
+    } catch (error) {
+      UserController.handleErrorResponse(res, error, "Failed to get churn stats");
     }
+  }
+
+  static handleErrorResponse(res, error, defaultMessage) {
+    const statusCode = error?.response?.status || 500;
+    res.status(statusCode).json({
+      error: defaultMessage,
+      details: error.message
+    });
   }
 }
 

@@ -18,7 +18,7 @@ import Buy_now from "./Component/Buy_now/Buy_now"
 import { CartProvider } from './Context/CartContext';  // Import CartProvider
 import OrderSuccess from "./Component/OrderSuccess/OrderSuccess";
 import useTimeTracking from "./Component/UserTrack/UserTrack";  // Importing your custom hook
-import Admin from './Component/Admin/Admin';
+import AdminDashboard from './Component/Admin/Admin';
 import Footer from "./Component/Footer/Footer"
 import AdminLogin from "./Component/Adminlogin/Adminlogin"
 function App() {
@@ -118,9 +118,9 @@ function App() {
           <Route path="/product" element={<View />} />
           <Route path="/buynow" element={<Buy_now />} />
           <Route path="/order-success" element={<OrderSuccess />} />
-          <Route path="/admin" element={<Admin />} />
+          {/* <Route path="/admin" element={<AdminDashboard />} /> */}
           <Route path="/admin-login" element={<AdminLogin />} />
-          <Route path="/admin" element={<ProtectedAdminRoute><Admin /></ProtectedAdminRoute>} />
+          <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
 
         </Routes>
     <Footer/>
