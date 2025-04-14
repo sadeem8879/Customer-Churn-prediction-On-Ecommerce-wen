@@ -80,6 +80,21 @@ const AgeChurnTooltip = ({ active, payload, label }) => {
     );
 };
 
+// const TrendTooltip = ({ active, payload, label }) => {
+//     if (!active || !payload || !payload.length) return null;
+
+//     return (
+//         <div className="custom-tooltip p-2" style={{
+//             backgroundColor: '#fff',
+//             border: '1px solid #ccc',
+//             borderRadius: '4px',
+//             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+//         }}>
+//             <p className="label mb-1"><strong>Month: {label}</strong></p>
+//             <p>Churn Rate: {payload[0].value.toFixed(2)}%</p>
+//         </div>
+//     );
+// };
 const TrendTooltip = ({ active, payload, label }) => {
     if (!active || !payload || !payload.length) return null;
 
@@ -91,7 +106,11 @@ const TrendTooltip = ({ active, payload, label }) => {
             boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
         }}>
             <p className="label mb-1"><strong>Month: {label}</strong></p>
-            <p>Churn Rate: {payload[0].value.toFixed(2)}%</p>
+            <p>Actual Churn: {payload[0].value.toFixed(2)}%</p>
+            <p>High Risk Customers: {payload[0].payload.absoluteValues.high}</p>
+            <p>Medium Risk Customers: {payload[0].payload.absoluteValues.medium}</p>
+            <p>Low Risk Customers: {payload[0].payload.absoluteValues.low}</p>
+            <p>Total Customers: {payload[0].payload.absoluteValues.total}</p>
         </div>
     );
 };
@@ -254,48 +273,80 @@ const AdminDashboard = () => {
             month: 'short'
         });
     };
-    
+
 
     const formatTrendData = (data) => {
         if (!data || !data.labels || !data.risk_breakdown || !data.total_customers) return [];
-    
+
         const { labels, risk_breakdown, total_customers } = data;
-    
+
         return labels.map((month, idx) => {
             const high = risk_breakdown["High Risk"]?.[idx] || 0;
             const med = risk_breakdown["Medium Risk"]?.[idx] || 0;
             const low = risk_breakdown["Low Risk"]?.[idx] || 0;
             const total = total_customers?.[idx] || 1;
-    
-            const overall = ((high + med + low) / total) * 100;
-            const highRate = (high / total) * 100;
-            const medRate = (med / total) * 100;
-            const lowRate = (low / total) * 100;
-    
+
+            // Calculate percentages (making sure we don't divide by zero)
+            const safeTotal = total > 0 ? total : 1;
+
             return {
                 month: formatDate(month),
-                churned_customers: parseFloat(overall.toFixed(2)),
-                high_risk: parseFloat(highRate.toFixed(2)),
-                medium_risk: parseFloat(medRate.toFixed(2)),
-                low_risk: parseFloat(lowRate.toFixed(2)),
+                // Only show actual churn percentage (not all risk-assessed customers)
+                churnedPercentage: ((high * 0.7 + med * 0.4 + low * 0.1) / safeTotal * 100),
+                highRiskPercentage: (high / safeTotal) * 100,
+                mediumRiskPercentage: (med / safeTotal) * 100,
+                lowRiskPercentage: (low / safeTotal) * 100,
+                absoluteValues: {
+                    high,
+                    medium: med,
+                    low,
+                    total
+                }
             };
         });
     };
-    
 
+
+    // const formatSegmentData = (data) => {
+    //     if (!data) return [];
+    //     try {
+    //         return Array.isArray(data)
+    //             ? data
+    //             : Object.entries(data).map(([segment, count]) => ({
+    //                 segment,
+    //                 count: Number(count) || 0
+    //             }));
+    //     } catch (e) {
+    //         console.error("Error formatting segment data:", e);
+    //         return [];
+    //     }
+    // };
     const formatSegmentData = (data) => {
         if (!data) return [];
-        try {
-            return Array.isArray(data)
-                ? data
-                : Object.entries(data).map(([segment, count]) => ({
-                    segment,
-                    count: Number(count) || 0
-                }));
-        } catch (e) {
-            console.error("Error formatting segment data:", e);
-            return [];
+
+        // Case 1: If 'segment_counts' exists (ideal)
+        if (data.segment_counts && typeof data.segment_counts === 'object') {
+            return Object.entries(data.segment_counts).map(([segment, count]) => ({
+                segment,
+                count: Number(count) || 0
+            }));
         }
+
+        // Case 2: If only 'segments' array exists — group by segment
+        if (Array.isArray(data.segments)) {
+            const grouped = {};
+            data.segments.forEach(({ segment, user_id_count }) => {
+                if (!segment) return;
+                grouped[segment] = (grouped[segment] || 0) + (user_id_count || 0);
+            });
+
+            return Object.entries(grouped).map(([segment, count]) => ({
+                segment,
+                count
+            }));
+        }
+
+        return [];
     };
 
     const formatRetentionRate = (data) => {
@@ -834,6 +885,7 @@ const AdminDashboard = () => {
 
 
                         <Col md={6}>
+
                             <Card className="h-100 shadow">
                                 <Card.Body>
                                     <Card.Title className="d-flex justify-content-between align-items-center">
@@ -847,46 +899,77 @@ const AdminDashboard = () => {
                                     </Card.Title>
                                     <ResponsiveContainer width="100%" height={300}>
                                         {dashboardData.churnTrends.length > 0 ? (
-                                           <LineChart data={dashboardData.churnTrends}>
-                                           <CartesianGrid strokeDasharray="3 3" />
-                                           <XAxis dataKey="month" />
-                                           <YAxis label={{ value: 'Churn %', angle: -90, position: 'insideLeft' }} />
-                                           <Tooltip content={<TrendTooltip />} />
-                                           <Legend />
-                                           <Line
-                                               type="monotone"
-                                               dataKey="churned_customers"
-                                               name="Total Churn"
-                                               stroke="#FF6384"
-                                               strokeWidth={2}
-                                               activeDot={{ r: 8 }}
-                                           />
-                                           <Line
-                                               type="monotone"
-                                               dataKey="high_risk"
-                                               name="High Risk"
-                                               stroke="#DC2626"
-                                               strokeWidth={2}
-                                               dot={{ r: 4 }}
-                                           />
-                                           <Line
-                                               type="monotone"
-                                               dataKey="medium_risk"
-                                               name="Medium Risk"
-                                               stroke="#F59E0B"
-                                               strokeWidth={2}
-                                               dot={{ r: 4 }}
-                                           />
-                                           <Line
-                                               type="monotone"
-                                               dataKey="low_risk"
-                                               name="Low Risk"
-                                               stroke="#16A34A"
-                                               strokeWidth={2}
-                                               dot={{ r: 4 }}
-                                           />
-                                       </LineChart>
-                                       
+                                            <LineChart
+                                                data={dashboardData.churnTrends}
+                                                margin={{ top: 5, right: 20, left: 10, bottom: 5 }}
+                                            >
+                                                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                                                <XAxis
+                                                    dataKey="month"
+                                                    tick={{ fill: '#666' }}
+                                                    tickMargin={10}
+                                                />
+                                                <YAxis
+                                                    domain={[0, 100]}
+                                                    tick={{ fill: '#666' }}
+                                                    tickFormatter={(value) => `${value}%`}
+                                                    label={{
+                                                        value: 'Churn %',
+                                                        angle: -90,
+                                                        position: 'insideLeft',
+                                                        style: { textAnchor: 'middle', fill: '#666' }
+                                                    }}
+                                                />
+                                                <Tooltip
+                                                    content={<TrendTooltip />}
+                                                    wrapperStyle={{
+                                                        backgroundColor: '#fff',
+                                                        border: '1px solid #ddd',
+                                                        borderRadius: '4px',
+                                                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                                                        padding: '10px'
+                                                    }}
+                                                />
+                                                <Legend
+                                                    wrapperStyle={{
+                                                        paddingTop: '20px',
+                                                        paddingBottom: '10px'
+                                                    }}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="churnedPercentage"
+                                                    name="Actual Churn"
+                                                    stroke="#FF6384"
+                                                    strokeWidth={2}
+                                                    activeDot={{ r: 8 }}
+                                                    dot={{ r: 4 }}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="highRiskPercentage"
+                                                    name="High Risk %"
+                                                    stroke="#DC2626"
+                                                    strokeWidth={2}
+                                                    dot={{ r: 4 }}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="mediumRiskPercentage"
+                                                    name="Medium Risk %"
+                                                    stroke="#F59E0B"
+                                                    strokeWidth={2}
+                                                    dot={{ r: 4 }}
+                                                />
+                                                <Line
+                                                    type="monotone"
+                                                    dataKey="lowRiskPercentage"
+                                                    name="Low Risk %"
+                                                    stroke="#16A34A"
+                                                    strokeWidth={2}
+                                                    dot={{ r: 4 }}
+                                                />
+                                            </LineChart>
                                         ) : (
                                             <div className="text-center py-5">
                                                 <p>No trend data available</p>
@@ -932,7 +1015,7 @@ const AdminDashboard = () => {
                                                     {dashboardData.customerSegments.map((entry, index) => (
                                                         <Cell
                                                             key={`cell-${index}`}
-                                                            fill={COLORS[entry.segment.toLowerCase().replace(/\s+/g, '_')] || '#8884d8'}
+                                                            fill={COLORS[entry.segment?.toLowerCase().replace(/\s+/g, '_')] || `hsl(${index * 72}, 70%, 50%)`}
                                                         />
                                                     ))}
                                                 </Pie>

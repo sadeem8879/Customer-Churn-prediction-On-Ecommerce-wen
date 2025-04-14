@@ -1022,9 +1022,9 @@ class UserController {
 
   static ML_API_CONFIG = {
     BASE_URL: "http://127.0.0.1:5000",
-    TIMEOUT: 60000, // increased to 60 seconds
-    RETRIES: 3,
-    RETRY_DELAY: 2000
+    TIMEOUT: 90000, // increased to 90 seconds
+    RETRIES: 4,
+    RETRY_DELAY: 3000
   };
 
 
@@ -1113,7 +1113,7 @@ class UserController {
       if (!["json", "csv"].includes(format)) {
         return res.status(400).json({ error: "Invalid format", allowedFormats: ["json", "csv"] });
       }
-      const data = await UserController.callWithRetry('/export-data', {
+      const data = await UserController.callWithRetry('/export', {
         params: { format },
         responseType: format === "csv" ? "stream" : "json"
       });
